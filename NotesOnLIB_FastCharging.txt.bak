@@ -1,0 +1,65 @@
+3 aspects which define many different techniques for fast charging given the physical safety limitations and aging of LIBS
+
+
+Sharten charging times and increase lifetime of battery cells
+
+1) Model-free charging
+	- pre-defined charging protocols. Most common is Constant Currnet (CC&CV).
+	- Improved method uses CC to charge battery until terminal voltage reaches upper cutoff. Then switches to CV until current drops below pre-set threshold.
+	- Multi-stage Constant currrent ->
+	
+Lacks phyiscal and electrochemical characteristics of battery
+
+2) Model-based charging:
+	- Capture battery dynamics to caputre charge states
+	- Can be reudecd to 2 classes
+	a) Reduced ordder electrochemical Models (RoEM)
+		- Can capture the Internal states of LIB's (Lithium-ion batteries) such as:
+			i) Legendre-Gauss-Radau LGR
+			ii) Modle predictive control (MPC)
+			iii) PI controller
+		Difficulties in prarameter identification and state estimations. 
+		- 
+	b) Equivalent -circuit-maodel based
+		- Extensivley used in BSM (Battery Management Systems)
+		- relatively simple and easy to parameterize
+		
+2a) ECM can employ one of the following for use
+	- EMC and LGR psuedospectral methods
+	- MPC (Model predictive control)
+	- Particale Swarm optimization
+	
+	Used for individual cells!! It is worth noting that inappropriate chargiong strategies may imcrease
+	inconsistencies. Call balancing needs to be taken into account.
+	
+3) Charing Equalization Stratagies (CES)
+	- Emply external circuit designes to deploy energy among individual cells. 
+	- Performance of Equalization systems depends on battery systems, equalization circuit topology, and = algos
+	
+	Proposals:
+	Wang et Al - Mean difference average method based on bidirectional flyback DC/DC converters
+	Zhang - Inductor based = and constrol strategies in CC, CV charging and discharging processes.
+	Ouyang - heirarchical cell equalization control approach based on MB cell-2-cell balancing system.
+	Dong - Forumalted the problem as a path-searching problem and solved with A-star algorithm.
+	
+	2 challenges for Model-based optimal charging control:
+	1) Charging and balancing control strategies are considered seperately in most cases.
+	The coupling relationship between then is roughly neglected. Fast charging and equalization algorithms should be developed
+	simultaneously, especially for scenarios with high charging currents. 
+	High charging current will increase inconsistencies among in-cells and create safety contraints. 
+	2) computational complexity increases with larger in-pack cells and are challenging in practical applications
+	
+	Proposed Deep reinforcement learning (DRL)
+	- Model free / Online adapabilitya
+	
+	Summarization of work
+	1) Unlike the existing model-based studies thast consider charging and balancing control strategies seperately.
+	the fast charging and balancing control problem is formulated as a multiobjective optimization problem with the consideration
+	of charging time, inconsistency, equalization, and overvoltage protection. 
+	2) To obtain an adaptive soution to the formulated multiobjective optimization problem, a balancing awareness fast
+	charging control framework is established using a DRL-based algorithm. Universal framework using DQN (Deep Q network)
+	3) Using real-world results for show the algorithm is reliable. 
+	
+	
+	
+	
