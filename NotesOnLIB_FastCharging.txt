@@ -195,6 +195,10 @@ battery pack is summarized.
 	Rewards:
 	rt = rtime + rbal + rvol + rsoc (20)
 	
+	abs(u) <= 0.3 is the constrint on U = U1, U2, UN]^t
+	
+	
+	Sum(u) = 0 is the sum of all the current values among all the battery cells
 	rtime delta= -1 denotes the chargin time wasted.
 	rbal = -||x1(i)-x1'(i)||^2/sqroot(n) denotes the inconsistency effects and
 	

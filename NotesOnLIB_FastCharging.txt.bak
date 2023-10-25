@@ -20,7 +20,7 @@ Lacks phyiscal and electrochemical characteristics of battery
 			iii) PI controller
 		Difficulties in prarameter identification and state estimations. 
 		- 
-	b) Equivalent -circuit-maodel based
+	b) Equivalent-circuit-model (ECM) based
 		- Extensivley used in BSM (Battery Management Systems)
 		- relatively simple and easy to parameterize
 		
@@ -60,6 +60,161 @@ Lacks phyiscal and electrochemical characteristics of battery
 	charging control framework is established using a DRL-based algorithm. Universal framework using DQN (Deep Q network)
 	3) Using real-world results for show the algorithm is reliable. 
 	
+	Modeling, Parameterization and equalizers:
+	Need to train algorithm in simulation to reduce costs, once training of the DRL algorithm is done, we can port the policies
+	to real work applications. 
 	
+	Thus, an ECM-based battery modeling and parameterization
+approach is first given out. Then, a cell-to-pack equalization
+topology is introduced. Finally, an integrated model of the
+battery pack is summarized.
+	
+	Thevenin ECM is introduced to describe battery dynamic behaviors due to it's simplicity and good adaptability. 
+	3 elements:
+	1) nonlinear voltage source bridging batter SOC (State of charge) and open circuit voltage (Uoc), an ohmic resistance, R0 simulating sudded volate drop.rise for step 
+	current input, and an R|||C network descrbing the polarization effects. 
+	U1(K + 1) = a1U1(K) + (1 - a)R1IL(K)
+	Ut(K) = Uinf(k) - U1(k) - IL(k)R0
+	where U1 is the volate across R||C networka
+	a1 = exp(-deltaT/(R1C1)), deltaT is sampling time, IL is the load current (+ charge / - discharge) and Ut is the terminal voltage (potential difference between
+	the posative and negative terminals of the battery. 
+	Uoc is a function of SOC (State of charge) -> SOc(K+1) = soc(k) - [(n0*deltaT/3600Cbat) * IL]
+	where no is (0 to 1) and is the coulombic efficiency (CE ratio of total charge extracted from the battery to the total charge put into
+	the battery over a full cycle. Cbat (capacity in Ah)
+	
+	Uoc, R0, a1, R1, Cbat, are unknown parameters. We hook up batteries and test the batters. considering the effects of tempurature as well 
+	OCV open circuit voltage of State of charge (OCV-SOC)
+	
+	Federal Urban Driving Schedule (FUDS) and the Urban Dynamometer Driving Schedule (UDDS) are employed to validate the identified parameters.
+	
+	
+	Relationship between Icp,i (Switch one on diagram Fig a. Energy transfered from Bi to T) and Ipc (Switch 2 sends from T to the whole pack)
+	aUt,i(k)Icp,i(k) = (sum[i=1, n]{Ui,i(K)})Ipc(k)
+	
+	'a' is the energy transfer efficiency of T, Ut,i is the terminal voltage of the ith cell, Icp,i/Ipc is the equalization of currents
+	at the cell.pack side of the equalizaer, respectively. 
+	
+	Approximate above equation to: Ipc(K) = (a/n)Ipc,i(k)
+	
+	Simulation used PWM Hz as 124kHz and duty cylces are Gi/Gs 80/19% respectively. Ipc is set as 7.5A
+	
+	X1(K) = [SOC1(K),...,SOCn(k)]T(Transformed) (matrix) contained within Rnx1
+	X2(k) = [Ut,i(k),... Ut,n(k)]T contained within Rnx1
+	X(k) = [x1(k), x2(l)]T contained within R2nx1 . u1 || Is -> denotes the bus current
+	y(k) = [Ut,i(k),...,Ut,n(k)]T termincal voltage vector
+	u2 = [u2,l(k),...,u2,n(k)]T with boolean elements u2,i contained {0,1},i - 1,2,...,n, representing the status
+	of balancing swithces.
+	
+	and
+	A = | In | On | 	B = | B1 | On |
+		| On | a  | 		| On | B2 |,
+		
+		C = [(1-Beta)/(n)]Icp; D = diag(R01, R02,....,R0n)
+	where In and On are nxn identity and zero matricies
+	
+	B1 = -n'0diag(-1/3600/Cbat,1...,-1/3600/Cbat,n), a = diag(a1,1,...,a1,n) and B2 = diag((1-a1,1)R1,1...,(1-a1,n)R1,n)
+	
+	
+	Problem Formulation of Balancing Awareness Fast Charging Control
+	
+	Minimize J = Jt + Je
+	
+	1) charging Time (Jt): charge time from initial SOC X1(0) to the expected final SOC ~x1,
+	
+	Jt = NdeltaT
+	
+	where N is the sameple steps from X1(0) to ~x1 and deltat is sampling time
+	
+	2) Balancing Effects (Je)
+	Je = sum{i=0, N}(||(x1(i) - ~x1(i)||^2)
+	|| denotes the 2norm
+	
+	To avoid violations in safety constraintsL
+	[ln is a column vector of ones, nx1]
+	1) Maximum current limitations:
+		phyiscal and chemical limits of LIBS:
+		Keep current:
+		|1nu1(k) + Cu2(k)| <= 1nImax (12)
+		
+	where Imax is the maximum charging current
+	
+	2) Voltage limitations: protection from battery being overcharged
+		1nUmin <=y(k) <1nUmax (13)
+		where Umin and Umax are the lower and upper voltage cuttoffs
+	
+	3) SOC constraints: in-pack cells SOC must also be kept within a safe region
+	
+	1n0<= x1(k) <1n100% (14)
+	
+	II) DRL enabled fast charging strategy:
+	
+	arg min(u1,u2) J (15)
+	
+	where the end time NdeltaT is unknown, leading ot challenged solving (15).
+	
+	DRL framework:
+	
+	Markov decision process (MDP). MDP is defined as a 5 tuple (SATRY).
+	st E' S denotes the batter state space:
+	at E' A denotes the actions space
+	st and at are battery state and selected actions at times t E' R+. 
+	p(st_1|st*at) E' T : SXA -> S is the state transition probability density function of transitioning to state st+1 conditioned 
+	on the agent taking action at in state st.
+	rt+1 =(r(st,at) E' R : S x A -> Reals is the reward function that maps each transition (st, at) to a scale.
+	y E' (0,1) is a discount rate
+	
+	Framework for the DRL for MDP consists of 2 components, i.e. environment (battery pack) and agent (optimizer). 
+	at At' the enironment will give out the current state st, through sensors or state obersvers.
+	The reward rt = r(st-1, at-1) will also be sent to the agent.
+	Then the agent will give our actions at according to the leared policy PI and st. Next the env state will transition
+	to st+1 and feedback an updated reward rt+1. In this sence, the DRL-based framework can provide a closed loop
+	optimization solution and the objective of the DRL alogrithm is to find an optimal policy PI* that maximize the long-term
+	expected rewards.
+	
+	PI* = arg MaxPI Epi [ sum{t=0, ing}(Y^tRt)] (16)
+	
+	DQN-based fast charging Algorithm
+	
+	To solve (16) we should define the state action value function Q^pi(st,at). Result for taking a t at state st
+	
+	Optimal Q function can be expressed as:
+	
+	Q^*(st, at)  = max(pi)Epi[ sum{k=0, inf}(Y^krt+k|st = s, at = a] (17)
+	
+	The optimal Q-func obeys the Bellman equation
+	
+	Q*(s, a) = Eai[r(st,at) + YmaxQ^*(s', a'|s, a)] (18)
+	
+	Deep NN to approximate the Q-function
+	Lq(sigma) = Es,a,s', a'[r + ymax(a')Qsignma(s',a') - Qsigma(s,a)] (19)
+	
+	where the first two items denote the expected Q-value referring to (18), and the last item is the actual output of the current value network.
+	
+	During the learning process we can apply gradiant-descent updating method on the loss function to improve the policy evaluation ability. 
+	
+	Rewards:
+	rt = rtime + rbal + rvol + rsoc (20)
+	
+	abs(u) <= 0.3 is the constrint on U = U1, U2, UN]^t
+	
+	
+	Sum(u) = 0 is the sum of all the current values among all the battery packs
+	rtime delta= -1 denotes the chargin time wasted.
+	rbal = -||x1(i)-x1'(i)||^2/sqroot(n) denotes the inconsistency effects and
+	
+	
+	rvol = sum{j=1, n}(&v,j) (21)
+	
+	rsoc = sum{j=1, n}(&s, j,) (22)
+	
+	where &v,j and &s,j denote the overvoltage and overcharge penilties of jth cell, which ca be defined as:
+	
+	&v,j = {-100(yi-Umax), if yi > Umax
+		   {0,				else			(23)
+		   
+		   
+	
+	&s,j = {-100, if SOC >= 100%
+	       {0,		else					(24)
 	
 	
