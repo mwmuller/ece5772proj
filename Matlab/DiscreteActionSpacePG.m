@@ -12,12 +12,12 @@ B = blkdiag(B_cell{:});
 % define the state and action spaces 
 ObsInfo = rlNumericSpec([num_cells 1]);
 ObsInfo.Name = "Cell SOCs";
-ActInfo = rlNumericSpec([num_cells 1]);
-ActInfo.Name = "Balancing Currents [A]"; 
+ActInfo = rlFiniteSetSpec({[0 0 0]', [1 0 0]', [0 1 0]', [0 0 1]'});
+ActInfo.Name = "Cell Switches"; 
 
 % Anonymous functions for reset and step functions
-ResetHandler = @() ResetFunction(num_cells); 
-StepHandler = @(Action, Info) StepFunction(Action, Info, A, B); 
+ResetHandler = @() ResetFuncDiscrete(num_cells); 
+StepHandler = @(Action, Info) StepFuncDiscrete(Action, Info, A); 
 
 % create the environment
 env = rlFunctionEnv(ObsInfo, ActInfo, StepHandler, ResetHandler); 
@@ -29,35 +29,20 @@ rng(0);
 % creating a policy gradient agent
 
 
-inPath = [
+actorNet = [
     featureInputLayer(prod(obsInfo.Dimension))
     fullyConnectedLayer(8)
-    reluLayer
+    %reluLayer
     fullyConnectedLayer(16)
     fullyConnectedLayer(16)
-    fullyConnectedLayer(prod(actInfo.Dimension), Name="inFC")
+    fullyConnectedLayer(numel(actInfo.Elements))
     ];
 
-meanPath = [
-    fullyConnectedLayer(prod(actInfo.Dimension), Name="meanOut") 
-    ];
 
-devPath = [
-    softmaxLayer(Name="stdOut")
-];
-
-% connect layers
-actorNet = layerGraph(inPath);
-actorNet = addLayers(actorNet, meanPath);
-actorNet = addLayers(actorNet, devPath);
-actorNet = connectLayers(actorNet,"inFC","meanOut/in");
-actorNet = connectLayers(actorNet,"inFC","stdOut/in");
-
-
-%agent = rlPGAgent(obsInfo, actInfo);
-%actorNet = getModel(getActor(agent));
-%criticNet = getModel(getCritic(agent));
-myActor = rlContinuousGaussianActor(actorNet, obsInfo, actInfo, ActionMeanOutputNames="meanOut", ActionStandardDeviationOutputNames="stdOut",ObservationInputNames="input");
+actorNet = dlnetwork(actorNet);
+summary(actorNet)
+%plot(actorNet)
+myActor = rlDiscreteCategoricalActor(actorNet, obsInfo, actInfo);
 
 agent = rlPGAgent(myActor);
 %figure
@@ -72,13 +57,12 @@ prb{1}
 
 dist = evaluate(myActor, {rand(obsInfo.Dimension)});
 dist{1}
-dist{2}
 agentOpts.ActorOptimizerOptions.LearnRate = 1e-2;
 agentOpts.ActorOptimizerOptions.GradientThreshold = 0.9;
 
 trainOpts = rlTrainingOptions(...
     MaxEpisodes=2000, ...
-    MaxStepsPerEpisode=400, ...
+    MaxStepsPerEpisode=300, ...
     Plots="training-progress",...
     StopTrainingCriteria="AverageReward",...
     StopTrainingValue=480,...
