@@ -14,15 +14,20 @@ function [NextObs,Reward,IsDone,NextState] = StepFunction(Action,State, A, B)
     
     % rewards
     r_time = -1; 
-    %r_bal  = -1*norm(x - mean(x)); % maybe don't do this
-    r_soc  = sum(-50.*(NextState > soc_ub | NextState < soc_lb)); % SOC is beyond or below bounds
+    r_bal  = -1*norm(x - mean(x)); % maybe don't do this
+    r_soc  = sum(-50.*(x > soc_ub | x < soc_lb)); % SOC is beyond or below bounds
     r_u    = sum(-50.*(abs(u) > u_ub));  % penalize if 
-    r_sign = 30.*all(u > 0) | all(u < 0);
+    %r_sign = 30.*all(u > 0) | all(u < 0);
     % r_du   = sum(-20.*(abs(delta_u) > du_ub)); % penalize if balancing currents change too harshly
-    r_sum_bal = -100.*(sum(u) ~= 0);    % penalize if balancing currents don't sum to zero
-    r_total = r_time + r_soc + r_u + r_sign + r_sum_bal; 
+    temp = abs(sum(u));
+    if (temp < 0.01)
+        temp = 0;
+    end
+    r_sum_bal = -100.*(temp);    % penalize if balancing currents don't sum to zero // adjust for .1% diff?
+    %r_sum_bal_plus = 100.*(sum(u) > 0.99);
+    r_total = r_time + r_soc + r_u + r_bal + r_sum_bal; 
     Reward = r_total;
-    if sum(u - mean(u)) < threshold_end
+    if norm(x - mean(x)) < threshold_end
         IsDone = 1;
     else
         IsDone = 0;

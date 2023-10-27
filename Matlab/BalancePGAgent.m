@@ -14,6 +14,8 @@ ObsInfo = rlNumericSpec([num_cells 1]);
 ObsInfo.Name = "Cell SOCs";
 ActInfo = rlNumericSpec([num_cells 1]);
 ActInfo.Name = "Balancing Currents [A]"; 
+ActInfo.LowerLimit = [-0.5, -0.5, -0.5]';
+ActInfo.UpperLimit = [0.5, 0.5, 0.5]';
 
 % Anonymous functions for reset and step functions
 ResetHandler = @() ResetFunction(num_cells); 
@@ -32,7 +34,7 @@ rng(0);
 inPath = [
     featureInputLayer(prod(obsInfo.Dimension))
     fullyConnectedLayer(8)
-    reluLayer
+    %reluLayer
     fullyConnectedLayer(16)
     fullyConnectedLayer(16)
     fullyConnectedLayer(prod(actInfo.Dimension), Name="inFC")
@@ -78,7 +80,7 @@ agentOpts.ActorOptimizerOptions.GradientThreshold = 0.9;
 
 trainOpts = rlTrainingOptions(...
     MaxEpisodes=2000, ...
-    MaxStepsPerEpisode=400, ...
+    MaxStepsPerEpisode=1000, ...
     Plots="training-progress",...
     StopTrainingCriteria="AverageReward",...
     StopTrainingValue=480,...
@@ -95,6 +97,9 @@ else
     load("MATLABCartpolePG.mat","agent");
 end
 
-simOptions = rlSimulationOptions(MaxSteps=3000);
+simOptions = rlSimulationOptions(MaxSteps=1000);
 experience = sim(env,agent,simOptions);
 totalReward = sum(experience.Reward)
+
+%save("AgentNet.mat", "agent");
+load("AgentNet.mat", "agent");
