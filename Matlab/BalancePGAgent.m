@@ -13,9 +13,7 @@ B = blkdiag(B_cell{:});
 ObsInfo = rlNumericSpec([num_cells 1]);
 ObsInfo.Name = "Cell SOCs";
 ActInfo = rlNumericSpec([num_cells 1]);
-ActInfo.Name = "Balancing Currents [A]"; 
-ActInfo.LowerLimit = [-0.5, -0.5, -0.5]';
-ActInfo.UpperLimit = [0.5, 0.5, 0.5]';
+ActInfo.Name = "Balancing Currents [A]";
 
 % Anonymous functions for reset and step functions
 ResetHandler = @() ResetFunction(num_cells); 
