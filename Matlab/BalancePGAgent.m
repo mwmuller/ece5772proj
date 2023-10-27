@@ -33,10 +33,8 @@ rng(0);
 
 inPath = [
     featureInputLayer(prod(obsInfo.Dimension))
-    fullyConnectedLayer(8)
-    %reluLayer
-    fullyConnectedLayer(16)
-    fullyConnectedLayer(16)
+    fullyConnectedLayer(10)
+    fullyConnectedLayer(15)
     fullyConnectedLayer(prod(actInfo.Dimension), Name="inFC")
     ];
 
@@ -59,9 +57,12 @@ actorNet = connectLayers(actorNet,"inFC","stdOut/in");
 %agent = rlPGAgent(obsInfo, actInfo);
 %actorNet = getModel(getActor(agent));
 %criticNet = getModel(getCritic(agent));
-myActor = rlContinuousGaussianActor(actorNet, obsInfo, actInfo, ActionMeanOutputNames="meanOut", ActionStandardDeviationOutputNames="stdOut",ObservationInputNames="input");
+%myActor = rlContinuousGaussianActor(actorNet, obsInfo, actInfo, ActionMeanOutputNames="meanOut", ActionStandardDeviationOutputNames="stdOut",ObservationInputNames="input");
 
-agent = rlPGAgent(myActor);
+initOpts = rlAgentInitializationOptions(NumHiddenUnit=128);
+
+%agent = rlPGAgent(myActor);
+agent = rlPGAgent(obsInfo,actInfo,initOpts);
 %figure
 %plot(actorNet)
 
@@ -76,11 +77,11 @@ dist = evaluate(myActor, {rand(obsInfo.Dimension)});
 dist{1}
 dist{2}
 agentOpts.ActorOptimizerOptions.LearnRate = 1e-2;
-agentOpts.ActorOptimizerOptions.GradientThreshold = 0.9;
+agentOpts.ActorOptimizerOptions.GradientThreshold = 1;
 
 trainOpts = rlTrainingOptions(...
-    MaxEpisodes=2000, ...
-    MaxStepsPerEpisode=1000, ...
+    MaxEpisodes=10000, ...
+    MaxStepsPerEpisode=200, ...
     Plots="training-progress",...
     StopTrainingCriteria="AverageReward",...
     StopTrainingValue=480,...

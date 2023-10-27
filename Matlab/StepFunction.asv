@@ -3,9 +3,9 @@ function [NextObs,Reward,IsDone,NextState] = StepFunction(Action,State, A, B)
     
     % system constraints 
     soc_lb = 0; soc_ub = 1;
-    u_ub = 0.3;
+    u_ub = 0.4;
     du_ub = 0.05; 
-    threshold_end = 0.04; 
+    threshold_end = 0.01; 
 
     % this is just the system dynamic equation 
     x = State; u = Action; 
@@ -27,14 +27,12 @@ function [NextObs,Reward,IsDone,NextState] = StepFunction(Action,State, A, B)
     
     %r_sum_bal_plus = 100.*(sum(u) > 0.99);
     if temp ~= 0 || r_soc ~= 0 || r_u ~= 0 % constraints 
-        num_ub = sum(abs(u) > u_ub);
-        r_u_reward = 0;
-        if(num_ub > 0)
-           u = (abs(u) - u_ub).*(abs(u) > u_ub);
-           r_u_reward = -50.*(sum(u)/(num_ub*u_ub)); % vary the reward based on how far over we are
+        if((abs(u) > u_ub))
+           u = u_ub - u (abs(u) > u_ub);
         end
-
-        r_total = r_soc + r_u_reward + r_sum_bal; 
+        r_u_reward = (-50.*(sum(abs(u) - u_ub)));
+        
+        r_total = r_soc + r_u + r_sum_bal; 
         Reward = r_total;
         IsDone = 1;
     else
