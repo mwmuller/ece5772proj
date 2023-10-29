@@ -6,7 +6,8 @@ function [InitialObservation, InitialState] ...
 % a desired level -- let's arbitrarily select 0.5 as said desired level,
 % and let's have the cell's SOC's distributed from 0.4 to 0.6
 
-InitialState = linspace(0.4, 0.6, num_cells)'; 
+InitialState = [1 0.2 0.5]';
+%linspace(0.4, 0.6, num_cells)'; 
 InitialObservation = InitialState; 
 
 end 
