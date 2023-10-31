@@ -66,13 +66,12 @@ agentOpts.ActorOptimizerOptions.LearnRate = 1e-3;
 agentOpts.ActorOptimizerOptions.GradientThreshold = 1;
 
 trainOpts = rlTrainingOptions(...
-    MaxEpisodes=30000, ...
-    MaxStepsPerEpisode=6000, ...
+    MaxEpisodes=10000, ...
+    MaxStepsPerEpisode=1000, ...
     Plots="training-progress",...
     StopTrainingCriteria="AverageReward",...
     StopTrainingValue=480,...
     ScoreAveragingWindowLength=100);
-
 
 doTraining = true;
 
@@ -84,9 +83,9 @@ else
     load("MATLABCartpolePG.mat","agent");
 end
 
-simOptions = rlSimulationOptions(MaxSteps=7000);
+simOptions = rlSimulationOptions(MaxSteps=10000);
 experience = sim(env,agent,simOptions);
 totalReward = sum(experience.Reward)
 
-%save("AgentNet.mat", "agent");
-load("AgentNet.mat", "agent");
+save("AgentNet_min_10_30_withNewPar.mat", "agent");
+%load("AgentNet_min_10_29.mat", "agent");

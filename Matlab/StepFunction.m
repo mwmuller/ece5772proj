@@ -5,12 +5,12 @@ function [NextObs,Reward,IsDone,NextState] = StepFunction(Action,State, A, B)
     soc_lb = 0; soc_ub = 1;
     u_ub = 0.4;
     %du_ub = 0.05;
-    a = 10;
-    threshold_end = 0.01;
-    threshold_end_up = 0.30;
+    a = 0.5;
+    threshold_end = 0.03;
+    threshold_end_up = 0.50;
     % this is just the system dynamic equation 
     x = State; u = Action; 
-    NextState = A*x + B*u; 
+    NextState = A*x + B*u*10; 
     NextObs = NextState; 
     
     % rewards
@@ -34,9 +34,18 @@ function [NextObs,Reward,IsDone,NextState] = StepFunction(Action,State, A, B)
 
     r_posMax = ~(find(x == max(x)) == find(u == min(u)));
     r_posMin = ~(find(x == min(x)) == find(u == max(u)));
+  %if(~isempty(find(u == 0)))
+  %    r_balanced = (find(x == (sum(x)/3)) == find(u == 0)); % 0 current at balanced index
+  %else
+  %    %% check if any are balanced and we don't have 0 in u
+  %    r_balanced = find(x == (sum(x)/3));
+  %    if(isempty(r_balanced))
+  %        r_balanced = 0;
+  %    end
+  %end
     %avgSOC = sum(x)/3; % get avg soc and determine if a cell doesn't need charge/discharge
     %myAvg = x((x == avgSOC));
-    if temp ~= 0 || r_soc ~= 0 || r_u ~= 0 || r_posMin ~= 0 || r_posMax ~= 0
+    if temp ~= 0 || r_soc ~= 0 || r_u ~= 0 || r_posMin ~= 0 || r_posMax ~= 0 %|| r_balanced ~=0
         num_ub = sum(abs(u) > u_ub); % get number of instances 
         r_u_reward = 0;
         if(num_ub > 0)
@@ -52,16 +61,18 @@ function [NextObs,Reward,IsDone,NextState] = StepFunction(Action,State, A, B)
         end
         r_posMax = -100.*r_posMax;
         r_posMin = -100.*r_posMin;
+        %r_balanced = -100.*r_balanced;
         r_total = r_soc + r_u_reward + r_sum_bal + r_posMax + r_posMin; 
         Reward = r_total;
         IsDone = 1; % termination Bad pick save time
         % [0, 0, 1] => balance to [0.333 0.333 0.333]
         % [0, 1, 1] => balance to [0.666 0.6666 0.6666]
     else % acceptable action zone
-        Reward = -0.001; % better than bad actions, but still bad over time
+        Reward = -0.01; % better than bad actions, but still bad over time
         normDiff = norm(x - mean(x));
         if normDiff < threshold_end % reached out goal
             Reward = 10000; % must be comprable to the negative rewards to be meaningful
+            IsDone = 1;
             % compete with r_time*numberofsteps taken
             % prevents action from not charging and simply meeting the
             % conditions to stay in the else statement
