@@ -1,0 +1,53 @@
+Consider a vector X containing n elements ranging from [0, 1];
+
+Assume a balancing SOC for each cell in pack X equivelant to sum(X)/n;
+
+There exists a vector Xb where each element is equivelant to the balancing SOC of X. Xb = (sum(X)/n)
+
+
+In an environment where a StateVector Xt is calculated by Xt + (Bu)T, where B is some scalar vector (calculated by 1/3600*C), U consists
+of balancing currents for each element in X, and Xt contains the SOCs of X at time T; (Equation 1)
+
+There exists a time T where the vector Xt is equal to, or within some range, of Xb.
+
+Provided a constraint on the balancing currents in U, denoted as UMax. We can calculate the time required
+to change the value of any element X by abs(Xb-X).
+
+For UMax = 0.1 and some element in X known as Xi, we can increase the value by 0.1 with equition (1) as follows
+
+Xi+0.1 = Xi + T*B0.1; (2) Since B is a scalar and has some constant value and U = Umax, we can rewrite equation 2 as follows
+
+0.1 / (B*0.1)= T (3) in Equation 3 we see we can find the time required to change Xi by 0.1 given B, U, and Xi. 
+Notice Xi cancels out and we are left with the delta 0.1
+
+Provided Time T, Xi, B, and desired change Xc (Xc = Xi +- c), we are able to solve for any U value from equation 1 as follows:
+
+(Xi +- c) = Xi + T*B*U => +- c / (B*T) = U, (4) where c is our change desired;
+
+If we seek to set each value in X to Xb, there must be some element(s) furthest away (Max(Xb-X)) that requires the max time T with Umax as the ROC constraint to achieve this. This element X is called the 
+"slowest" element
+
+Tmax = max(Xb-X) / (B*UMax); (3b)// Equation 3 modified with ROC being the maximum distance of any element Xi from the balancing SOC Xb
+
+Since Xb, X and B are all constant value that remain unchanged once calculated. The only variable remaining to update Tmax is Umax.
+
+Since Tmax is proportional to UMax, it stands to reason that as UMax increases, the time to achieve Max(Xb-X) decreases and visa versa. 
+
+Once Tmax has been calculated for the "Slowest" element, we have a time T we can use to find the U values for each other element in X with equation (3)
+
+If there are multiple elements in Xi that are also "slowest" elements, we store the number of elements as Xs, we must ensure we split the UMax current evenly among them. An augment to equation 3b 
+
+In order to maintain a constraint sum(u) = 0, we must ensure we do not OVER apply the Umax to multiple elements. 
+
+Tmax = max(Xb-X) / (B*UMax/Xs)
+
+
+Once we've determined the Tmax value based on Umax, is stands to reason that each other current Ui should be less than UMax, and each !Xs element in X has a balancing difference < Max(Xb-X)
+
+And therefore, should require a lower U value to reach Xb-Xi by Tmax. 
+
+Now that Tmax determines the time to charge for every other element in X to equal Xb, we can use equation (4) to find each other current in U
+
+(+- c = Xb-X) ==>   Xb-Xi / (B*Tmax) = Ui for some index i pertaining to an element Xi and current Ui.
+
+We can ensure 

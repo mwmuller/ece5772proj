@@ -11,12 +11,14 @@
 #define UMAX (0.3f) // max balancing current to be applied
 #define SIZE (3) // size of pack
 #define STEPt (20) // how often we check the battery SOCs to apply balancing
+
+
 // defined environment parameters
 #define SAFETHRESH (0.90f) // threshold before we throttle balancing current
-#define EXTTIME (2000) // maximum additional time for balancing
+#define EXTTIME (10000) // maximum additional time for balancing
 #define UPPERSOC (1.015f) // Check if above the 
 #define LOWERSOC (0.985f)
-#define THROTTLESCALAR (1.263) // how much to we increase the throttle? (current best 1.263)
+#define THROTTLESCALAR (1.0f) // how much to we increase the throttle? (current best 1.263)
 
 
 float getMaxDiff(float *arr, int n, float xBal, int maxDiffCount, bool &isMaxUpper)
@@ -149,13 +151,22 @@ void executeEnv(float *pack, float *uVector, int packSize, int _Time, float *sta
     }
     printf("checking extended=============================\n");
     // now determine when we hit our max
+    float sPackBal = 0;
+    bool balanced;
+    int totalTime;
     for(int y = 0; y < EXTTIME; y+=STEPt)
     {
+        balanced = true;
         for(int a = 0; a < packSize; a++)
         {
             stateUVector[a] -= (stateUVector[a] / (throttleTime))*THROTTLESCALAR*STEPt; // reduce current balance by some value calculated
             
             statePack[a] += (BETA*stateUVector[a]*STEPt);
+
+            if(statePack[a] > (xBal*UPPERSOC) || statePack[a] < (xBal*LOWERSOC))
+            {
+                balanced = false; // set this instance to false
+            }
         }
         if(y % 500 == 0)
         {
@@ -166,18 +177,17 @@ void executeEnv(float *pack, float *uVector, int packSize, int _Time, float *sta
             }
             printf("Timing %d\n", _Time);
         }
-        if(statePack[0] < (xBal*UPPERSOC) && statePack[0] > (xBal*LOWERSOC))
+        if(balanced)
         {
-            int totalTime = (_Time + y);
-            printf("balance range upper %f\n", xBal*UPPERSOC);
-            printf("balance range lower %f\n", xBal*LOWERSOC);
-            printf("Time before throttle: %d\n", _Time);
-            printf("Total time to max was: %d\n", totalTime);
-            printf("Total Throttle time: %d\n", totalTime - _Time);
-            
             break;
-        }
+        }   
+        totalTime = _Time + y;
     }
+    printf("balance range upper %f\n", xBal*UPPERSOC);
+    printf("balance range lower %f\n", xBal*LOWERSOC);
+    printf("Time before throttle: %d\n", _Time);
+    printf("Total time to max was: %d\n", totalTime);
+    printf("Total Throttle time: %d\n", totalTime - _Time);
 }
 
 // input size of vector, uMax, 
@@ -257,9 +267,12 @@ int main(int argc, char **argv)
         stateUVector[t] = uVector[t];
     }
     executeEnv(pack, uVector, inSIZE, _Time, statePack, stateUVector, xBalanced, throttleTime);
+    float sum=0;
     for(int t = 0; t < inSIZE; t++)
     {
+        sum+=uVector[t];
         printf("pack[%d]: %f U[%d]: %f sPack[%d]: %f \n",t, pack[t], t, uVector[t], t, statePack[t]);
     }
+    printf("sum %f\n", sum);
     return 0;
 }
