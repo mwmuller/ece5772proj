@@ -1,8 +1,9 @@
 % Open a file for writing
 layerNum = 1;
-meanbool = 1;
+meanbool = 0;
 inverting = 0;
 nodeNum = 1;
+stdbool = 0;
 folder = "network\";
 myParams = actorParams.Actor;
 for indexLayer = 1 : size(myParams)
@@ -14,6 +15,8 @@ for indexLayer = 1 : size(myParams)
     mSize = size(subMatrix,2);
     if mSize == 256 && size(subMatrix, 1) == 3 % need to invert 
         inverting = 1;
+        meanbool = ~meanbool;
+        mSize = size(subMatrix,1);
     end
     for NodeNum = 1 : mSize
         if inverting == 1
@@ -28,8 +31,8 @@ for indexLayer = 1 : size(myParams)
         if inverting == 1 % need to invert 
             if meanbool == 1
                 newFile = folder + "MeanOutput_" + "Weight_" + nodeNum;
-                meanbool = 0;
-            else
+            end
+            if stdbool == 1
                 newFile = folder + "StdDevOutput_" + "Weight_" + nodeNum;
             end
             subMatrix = subMatrix';
@@ -38,6 +41,10 @@ for indexLayer = 1 : size(myParams)
         writematrix(subMatrix(:, nodeNum), newFile);
         nodeNum = nodeNum + 1;
     end
+    if meanbool == 1
+        stdbool = 1;
+    end
     display(indexLayer);
+
     inverting = 0;
 end

@@ -1,0 +1,75 @@
+function [NextObs,Reward,IsDone,NextState] = StepFunction_Math(Action,State, A, B)
+    
+    % system constraints 
+    u_ub = 0.4;
+    threshold_end = 0.03;
+    % this is just the system dynamic equation 
+    x = State; u = Action;
+    NextState = A*x + B*u*10; 
+    NextObs = NextState; 
+    
+    xAvg = (sum(x)/length(x));
+    avgDiff = (xAvg - x);
+    maxDiff = max(abs(xAvg - x));
+    count = sum(maxDiff == avgDiff);
+    maxTime = (maxDiff)/(B(1,1)*(u_ub/(count)));
+
+    simulateEnd = A*x' + B*u*(maxTime*2);
+    normDiff = norm(simulateEnd - mean(simulateEnd));
+    if (u ~= (avgDiff / maxTime*B(1,1)))
+        % not the rigt one
+        r_badU = 1;
+    end
+    % rewards
+    r_time = 1;
+    r_posMax = ~(find(x == max(x)) == find(u == min(u)));
+    r_posMin = ~(find(x == min(x)) == find(u == max(u)));
+    if(~isempty(find(u == 0)))
+        r_balanced = (find(x == (sum(x)/3)) == find(u == 0)); % 0 current at balanced index
+    else
+        %% check if any are balanced and we don't have 0 in u
+        r_balanced = find(x == (sum(x)/3));
+        if(isempty(r_balanced))
+            r_balanced = 0;
+        end
+    end
+    %avgSOC = sum(x)/3; % get avg soc and determine if a cell doesn't need charge/discharge
+    %myAvg = x((x == avgSOC));
+    if r_badU ~= 0 || r_posMin ~= 0 || r_posMax ~= 0
+
+        r_badUVary = -1000.*()
+        r_posMax = -100.*r_posMax;
+        r_posMin = -100.*r_posMin;
+        %r_balanced = -100.*r_balanced;
+        r_total = r_badUVary + r_posMax + r_posMin; 
+        Reward = r_total;
+        IsDone = 1; % termination Bad pick save time
+    else % acceptable action zone
+        % Now determine if it's efficient Or just barely passing
+        % performing max time calculation
+        
+        Reward = -0.01; % better than bad actions, but still bad over time
+        normDiff = norm(x - mean(x));
+        if normDiff < threshold_end % reached out goal
+            Reward = 10000; % must be comprable to the negative rewards to be meaningful
+            IsDone = 1;
+            % compete with r_time*numberofsteps taken
+            % prevents action from not charging and simply meeting the
+            % conditions to stay in the else statement
+            % the vector [0 -0.1 0.1] would work but isn't correct
+        else % The closer you get over time, the btter the reward
+            % determine what normdiff is in respect to threshold_end
+            % reward for being close
+            % punish for being too far but also an acceptable action
+            tempExp = 0;
+            if(normDiff < threshold_end_up) % are we close enough to start issueing a reward
+                tempExp = exp(-1*a*(normDiff-threshold_end));
+            else
+                % do not change reward from -1
+            end
+            Reward = Reward + tempExp;
+            IsDone = 0;
+        end
+    end
+
+    

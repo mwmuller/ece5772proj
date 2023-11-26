@@ -94,7 +94,6 @@ agent = rlPGAgent(actor, agentOpts);
 % agent = rlPGAgent(obsInfo, actInfo, agentOpts);
 retrievedActorNet = layerGraph(getModel(getActor(agent)));
 actorParams = getLearnableParameters(agent);
-for()
 
 trainOpts = rlTrainingOptions(...
     MaxEpisodes=20000, ...
