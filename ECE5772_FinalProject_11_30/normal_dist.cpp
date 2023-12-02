@@ -1,0 +1,26 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <random>
+#include <math.h>
+
+#define NUM_TRIALS (10000000)
+int main(){
+    
+    std::default_random_engine rng; 
+    std::normal_distribution<double> dist(5.0, 2.0);
+    
+    double avg = 0.0; 
+    double val_sq = 0.0;
+    for (int i = 0; i < NUM_TRIALS; i++){
+        double num = dist(rng);
+        avg += num/NUM_TRIALS;
+        val_sq += num*num/NUM_TRIALS; 
+        printf("%lf\n", num);
+    }
+    printf("Average = %lf\n", avg); 
+    printf("Variance = %lf\n", sqrt(val_sq - avg*avg)); 
+    
+    return 0; 
+
+}

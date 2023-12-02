@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
+#include <nnArch.h>
+
 #define I_CALLOC(x) (int*)calloc(x, sizeof(int)); 
 #define D_CALLOC(x) (double*)calloc(x, sizeof(double)); 
 #define MEMCPY(dest, orig, num) for(int cnt = 0; cnt < num; cnt++) dest[cnt] = orig[cnt];
