@@ -9,7 +9,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <tbb/tbb.h>
-#include "nn_fun.h"
+#include "nn_fun_withRed.h"
 #include "nnArchBias.h"
 #include "nnArchWeights.h"
 
@@ -39,10 +39,10 @@ int main(){
      */
      
     /* PARAMETER INITIALIZATION */
-    int num_layers  = 5;
-    int num_inputs  = 3;
-    int num_outputs = 3;
-    int layer_sizes[] = {3, 256, 1, 256, 1, 3}; // input - hidden layers - output
+    int num_layers  = 4;
+    int num_inputs  = 1;
+    int num_outputs = 1;
+    int layer_sizes[] = {1, 5, 5, 1}; // input - hidden layers - output
     
     double network_biases[] = 
             {
@@ -101,7 +101,7 @@ int main(){
                 0,
                 0,
                 a_in,
-                a_out
+                a_out,
             };
         
         /* FORWARD PROPAGATION */ 
@@ -126,12 +126,13 @@ int main(){
                 a_in,
                 a_out
             };
-        
         /* FORWARD PROPAGATION */   
         gettimeofday(&pf_start, NULL);                      
         ParForNeuralNet(&params, &info);
         gettimeofday(&pf_end, NULL);
-         
+
+        a_out[0] = info.a_out[0];
+        // Without the above statement, we just pass the same value along
         pfor_us += (pf_end.tv_sec - pf_start.tv_sec)*1000000 + pf_end.tv_usec - pf_start.tv_usec;
         printf("\nComputation Time (parallel_for): %lf\n", pfor_us);
         printf("Output(s):\t%lf\n", a_out[0]);
@@ -154,6 +155,7 @@ int main(){
         ParPipNeuralNet(&params, &info);  
         gettimeofday(&pp_end, NULL); 
         
+        a_out[0] = info.a_out[0];
         ppip_us += (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
         printf("\nComputation Time (parallel_pipeline): %lf\n", ppip_us);
         printf("Output(s):\t%lf\n", a_out[0]);
@@ -170,7 +172,6 @@ int main(){
                 a_in,
                 a_out
             };
-        
         // parallel reduce implementation   
         gettimeofday(&pp_start, NULL);
         ParRedNeuralNet(&params, &info);  

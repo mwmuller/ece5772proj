@@ -65,68 +65,6 @@
         double* a_out; 
         
     } LayerInfo; 
-    
-    class NetworkLayerReduce
-    {
-        private:
-            LayerInfo* info;
-            NetworkParams* params;
-            int my_num_out;
-            int my_num_in;
-            int my_node_num;
-        public:
-            double my_aout;
-            void operator()(const blocked_range<int> &r) const{
-                my_aout = info->a_out;
-                int layerNum = info->i; 
-                // int num_in  = params->layer_sizes[layerNum]; // returns the number of w in the layer
-                // int num_out = params->layer_sizes[layerNum+1];
-                int num_in = my_num_in;
-                int j = r.begin();
-                    
-                double b = params->network_biases[info->sum_out_layer + j];
-                
-                // weight number  
-                for(int k = 0; k < num_in; k++){
-                    double w    = params->network_weights[info->sum_layer + j*num_in + k];
-                    double inp  = info->a_in[k];
-                    double outp = w*inp; 
-                    info->a_out[j] += outp; 
-                }
-                
-                if (layerNum != params->num_layers - 2) {
-                    double result = info->a_out[j] + b;
-                    info->a_out[j] = (*actfcn_arr[params->hiddenfcn])(result); 
-                }
-                else {
-                    double result = info->a_out[j] + b;
-                    info->a_out[j] = (*actfcn_arr[params->outfcn])(result); 
-                }
-            }  
-
-        NetworkLayerReduce(NetworkLayerReduce &x, tbb::split) : 
-        params(x.params),
-        info(x.info),
-        my_num_out(x.my_num_out)
-        {
-            my_aout = (double *) malloc(my_num_out*sizeof(double));
-        }
-        void join (const NetworkLayerReduce &y)
-        {
-            for (int k = 0; k < my_num_out; k++) // iteration for matrix mult (rows/columns)
-            {
-                info->a_out[k] = y.info->a_out[k]; // increment the value
-            }
-            free(y.info->a_out);
-        }
-        
-        NetworkLayerReduce(NetworkParams* params_in, LayerInfo* info_in, int num_out, int num_in) : 
-        params(params_in), 
-        info(info_in),
-        my_num_in(num_in),
-        my_num_out(num_out)
-        {}
-    };
 
     class NetworkLayer {
         
@@ -300,13 +238,6 @@
     void ParallelComputeLayer(NetworkParams* p, LayerInfo* l, int num_out){
         parallel_for(blocked_range<int>(0, num_out), NetworkLayer(p, l));
     }
-    
-    void ReduceComputeLayer(NetworkParams* p, LayerInfo* l){
-        int num_out = p->layer_sizes[(l->i)+1]; // get the output layer size for preproc
-        int num_in = p->layer_sizes[(l->i)]; // get the output layer size for preproc
-        NetworkLayerReduce nnReduce(p, l, num_out, num_in);
-        parallel_reduce(blocked_range<int>(0, num_out, 1), nnReduce);
-    }
 
     void SequentialNeuralNet(NetworkParams* params, LayerInfo* info) {
         
@@ -450,51 +381,8 @@
             info->a_out = a_out_t;
             
             int ntoken = 20;
+            printf("prePipe %lf\n", info->a_out[0]);
             RunLayerPipeline(ntoken, num_out, params, info); 
-            sum_layer += num_in*num_out;
-            sum_out_layer += num_out;
-            
-        }
-        
-        MEMCPY(info->a_out, a_out_t, params->num_outputs);
-        free(a_in_t);
-        free(a_out_t);
-         
-    }
-     
-    void ParRedNeuralNet(NetworkParams* params, LayerInfo* info){
-        
-        int sum_layer = 0;
-        int sum_out_layer = 0; 
-        double *a_in_t, *a_out_t;
-        
-        for(int i = 0; i < params->num_layers - 1; i++){
-            
-            int num_in  = params->layer_sizes[i];
-            int num_out = params->layer_sizes[i+1];
-            
-            if (i == 0){
-                sum_layer = 0;
-                sum_out_layer = 0;
-                a_in_t  = D_CALLOC(num_in);
-                MEMCPY(a_in_t, params->network_inputs, num_in); 
-                a_out_t = D_CALLOC(num_out); 
-            }
-            else{
-                free(a_in_t);
-                a_in_t = D_CALLOC(num_in);
-                MEMCPY(a_in_t, a_out_t, num_in);
-                free(a_out_t);
-                a_out_t = D_CALLOC(num_out); 
-            }
-            
-            info->i = i;
-            info->sum_layer = sum_layer;
-            info->sum_out_layer = sum_out_layer; 
-            info->a_in = a_in_t;
-            info->a_out = a_out_t;
-            
-            ReduceComputeLayer(params, info);
             sum_layer += num_in*num_out;
             sum_out_layer += num_out;
             
