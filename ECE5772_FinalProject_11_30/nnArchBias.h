@@ -1,4 +1,4 @@
-const double network_bias[] = {
+const double network_biases[] = {
 
  // Description of following elements Bias_L1Node001
 0,
@@ -524,5 +524,5 @@ const double network_bias[] = {
  // Description of following elements Bias_L4Node001
 0,
 0,
-0,
+0
 };

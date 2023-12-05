@@ -9,7 +9,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <tbb/tbb.h>
-#include "nn_fun_withRed.h"
+#include "nn_fun.h"
 #include "nnArchBias.h"
 #include "nnArchWeights.h"
 
@@ -40,45 +40,45 @@ int main(){
      
     /* PARAMETER INITIALIZATION */
     int num_layers  = 4;
-    int num_inputs  = 1;
-    int num_outputs = 1;
-    int layer_sizes[] = {1, 5, 5, 1}; // input - hidden layers - output
+    int num_inputs  = 3;
+    int num_outputs = 3;
+    int layer_sizes[] = {3, 256, 256, 3}; // input - hidden layers - output
     
-    double network_biases[] = 
-            {
-                0.2726, -0.8559, 0.1930, 0.0695, 0.7407,
-                -0.5903, -0.1090, -0.3654, 0.2525, -0.3625,
-                0.5746
-            };
-    double network_weights[] = 
-            {   
-                // input layer weights
-                0.7700,
-                0.7451, 
-                0.1640,
-                2.3107,
-                -0.3672,
+    // double network_biases[] = 
+    //         {
+    //             0.2726, -0.8559, 0.1930, 0.0695, 0.7407,
+    //             -0.5903, -0.1090, -0.3654, 0.2525, -0.3625,
+    //             0.5746
+    //         };
+    // double network_weights[] = 
+    //         {   
+    //             // input layer weights
+    //             0.7700,
+    //             0.7451, 
+    //             0.1640,
+    //             2.3107,
+    //             -0.3672,
                 
-                // hidden layer weights
-                0.6733, 0.9759, 0.5582, -0.2056, 0.7284,
-                0.2449, 0.7283, 0.0829, 1.0228, 0.3529,
-                0.3444, -0.2222, 0.7856, -0.2770, -0.4306,
-                -0.4834, -0.0905, -0.1762, -2.2559, 0.3513,
-                1.0349, -0.5066, -0.1862, 0.9359, 0.0987,
+    //             // hidden layer weights
+    //             0.6733, 0.9759, 0.5582, -0.2056, 0.7284,
+    //             0.2449, 0.7283, 0.0829, 1.0228, 0.3529,
+    //             0.3444, -0.2222, 0.7856, -0.2770, -0.4306,
+    //             -0.4834, -0.0905, -0.1762, -2.2559, 0.3513,
+    //             1.0349, -0.5066, -0.1862, 0.9359, 0.0987,
                 
-               // output layer weights
-               -0.0913, -0.4448, 0.1683, -2.2543, 0.5929         
-            };
-    double network_inputs[] = {-1}; 
+    //            // output layer weights
+    //            -0.0913, -0.4448, 0.1683, -2.2543, 0.5929         
+    //         };
+    double network_inputs[] = {0.2, 0.3, 0.5}; 
     double *a_in  = D_CALLOC(num_inputs);
     double *a_out = D_CALLOC(num_outputs);
     int sum_layer;
     int sum_out_layer; 
     NetworkParams params;
     LayerInfo info;
-    struct timeval seq_start, seq_end, pf_start, pf_end, pp_start, pp_end;
-    double seq_us = 0.0, pfor_us = 0.0, ppip_us = 0.0; 
-    double seq_ans = 0.0, pfor_ans = 0.0, ppip_ans = 0.0; 
+    struct timeval seq_start, seq_end, pf_start, pf_end, pp_start, pp_end, pr_start, pr_end;
+    double seq_us = 0.0, pfor_us = 0.0, ppip_us = 0.0, pred_us = 0.0; 
+    double seq_ans = 0.0, pfor_ans = 0.0, ppip_ans = 0.0, pred_ans = 0.0; // Maybe not needed
 
     params = 
         {
@@ -110,9 +110,11 @@ int main(){
         gettimeofday(&seq_end, NULL); 
         
         // timing
-        seq_us += (seq_end.tv_sec - seq_start.tv_sec)*1000000 + seq_end.tv_usec - seq_start.tv_usec;
+        seq_us = (seq_end.tv_sec - seq_start.tv_sec)*1000000 + seq_end.tv_usec - seq_start.tv_usec;
         printf("\nComputation Time (sequential): %lf\n", seq_us);
-        printf("Output(s):\t%lf\n", a_out[0]); 
+        printf("Output(s)\n"); 
+
+        printOutput(info.a_out, num_outputs);
 
     #endif
     
@@ -133,9 +135,11 @@ int main(){
 
         a_out[0] = info.a_out[0];
         // Without the above statement, we just pass the same value along
-        pfor_us += (pf_end.tv_sec - pf_start.tv_sec)*1000000 + pf_end.tv_usec - pf_start.tv_usec;
+        pfor_us = (pf_end.tv_sec - pf_start.tv_sec)*1000000 + pf_end.tv_usec - pf_start.tv_usec;
         printf("\nComputation Time (parallel_for): %lf\n", pfor_us);
-        printf("Output(s):\t%lf\n", a_out[0]);
+        printf("Output(s)\n");
+
+        printOutput(info.a_out, num_outputs);
 
     #endif
     
@@ -156,9 +160,11 @@ int main(){
         gettimeofday(&pp_end, NULL); 
         
         a_out[0] = info.a_out[0];
-        ppip_us += (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
+        ppip_us = (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
         printf("\nComputation Time (parallel_pipeline): %lf\n", ppip_us);
-        printf("Output(s):\t%lf\n", a_out[0]);
+        printf("Output(s)\n");
+
+        printOutput(info.a_out, num_outputs);
     
     #endif
 
@@ -173,13 +179,15 @@ int main(){
                 a_out
             };
         // parallel reduce implementation   
-        gettimeofday(&pp_start, NULL);
+        gettimeofday(&pr_start, NULL);
         ParRedNeuralNet(&params, &info);  
-        gettimeofday(&pp_end, NULL); 
+        gettimeofday(&pr_end, NULL); 
         a_out[0] = info.a_out[0];
-        ppip_us += (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
-        printf("\nComputation Time (parallel_reduce): %lf\n", ppip_us);
-        printf("Output(s):\t%lf\n", a_out[0]);
+        pred_us = (pr_end.tv_sec - pr_start.tv_sec)*1000000 + pr_end.tv_usec - pr_start.tv_usec;
+        printf("\nComputation Time (parallel_reduce): %lf\n", pred_us);
+        printf("Output(s)\n");
+
+        printOutput(info.a_out, num_outputs);
     
     #endif
     
