@@ -152,7 +152,7 @@ int main(){
         
         // parallel pipelined implementation   
         gettimeofday(&pp_start, NULL);
-        ParPipNeuralNet(&params, &info);  
+        ParPipNeuralNet(&params, &info);
         gettimeofday(&pp_end, NULL); 
         
         a_out[0] = info.a_out[0];
@@ -176,7 +176,7 @@ int main(){
         gettimeofday(&pp_start, NULL);
         ParRedNeuralNet(&params, &info);  
         gettimeofday(&pp_end, NULL); 
-        
+        a_out[0] = info.a_out[0];
         ppip_us += (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
         printf("\nComputation Time (parallel_reduce): %lf\n", ppip_us);
         printf("Output(s):\t%lf\n", a_out[0]);

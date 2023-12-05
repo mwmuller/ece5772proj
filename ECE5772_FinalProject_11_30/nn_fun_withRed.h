@@ -71,34 +71,30 @@
         private:
             LayerInfo* info;
             NetworkParams* params;
-            int my_num_out;
             int my_weight_idx_base;
         public:
             double my_aout;
             void operator()(const blocked_range<int> &r) {
                 
                 int layerNum = info->i; 
-                int k;
-                int a_out = my_aout;
+                int k = r.begin();
+                double a_out = my_aout;
                 double w;
                 double inp;
                 // int num_in  = params->layer_sizes[layerNum]; // returns the number of w in the layer
                 // int num_out = params->layer_sizes[layerNum+1];
-                for (k = 0; k != r.end(); k++)
-                {
-                    w    = params->network_weights[my_weight_idx_base + k];      
-                    inp  = info->a_in[k]; //get from info->a_in[k]
-                    printf("Whats the input? %lf\n", inp);
-                    printf("Whats the output? %lf\n", w*inp);
-                    a_out += w*inp; 
-                }
+                w    = params->network_weights[my_weight_idx_base + k];      
+                inp  = info->a_in[k]; //get from info->a_in[k]
+                //printf("r value: %d\n", k);
+                a_out += w*inp;
+                //printf("inside reduce a_out %lf\n", a_out);
                 my_aout = a_out;
             }  
 
         NetworkLayerReduce(NetworkLayerReduce &x, tbb::split) : 
         params(x.params),
         info(x.info),
-        my_num_out(x.my_num_out),
+        my_aout(0), // CANNOT BE x.my_aout
         my_weight_idx_base(x.my_weight_idx_base)
         {
         }
@@ -107,11 +103,10 @@
             my_aout += y.my_aout; // increment the value
         }
         
-        NetworkLayerReduce(NetworkParams* params_in, LayerInfo* info_in, int num_out, int weight_idx) : 
+        NetworkLayerReduce(NetworkParams* params_in, LayerInfo* info_in, int weight_idx) : 
         params(params_in), 
         info(info_in),
         my_aout(0),
-        my_num_out(my_num_out),
         my_weight_idx_base(weight_idx)
         {}
     };
@@ -143,6 +138,7 @@
                         double w    = params->network_weights[info->sum_layer + j*num_in + k];
                         double inp  = info->a_in[k];
                         double outp = w*inp; 
+                        //printf("BaseInpu for weights %d\n", info->sum_layer + j*num_in + k);
                         info->a_out[j] += outp; 
                     }
                     
@@ -202,12 +198,13 @@
     class PipelineInput {
         private:
             int num_out;
+            mutable int j;
         public:
-            PipelineInput(int num_out_t): num_out(num_out_t) {}
+            PipelineInput(int num_out_t): num_out(num_out_t), j(0) {}
             
         int operator() (flow_control& fc) const {
-            static int j = 0;
             int j_out = 0;
+            //printf("j = %d | j_out %d\n", j, j_out);
             if (j < num_out) {
                 j_out = j;
                 j++;
@@ -233,10 +230,12 @@
                 int layerNum = inf->i; 
                 int num_in  = np->layer_sizes[layerNum];
                 int num_out = np->layer_sizes[layerNum+1]; 
-                double b = np->network_biases[inf->sum_out_layer + j];  
+                double b = np->network_biases[inf->sum_out_layer + j];
                 /* weight number */
+                //printf("Params: layerNum %d | num_in %d | num_out %d\n", layerNum, num_in, num_out);
                 for(int k = 0; k < num_in; k++){
                     double w    = np->network_weights[inf->sum_layer + j*num_in + k];
+                    //printf("Weight %lf\n", w);
                     double inp  = inf->a_in[k];
                     double outp = w*inp; 
                     result += outp; 
@@ -244,7 +243,7 @@
                 /* if we ARE NOT computing the output layer */
                 if (layerNum != np->num_layers - 2) {
                     double z = result + b;
-                    printf("reslu %lf\n", result);
+                    //printf("Z relu: %lf\n", z);
                     return (*actfcn_arr[np->hiddenfcn])(z); 
 
                 }
@@ -252,6 +251,7 @@
                 else {
                     /* purelin activation function */
                     double z = result + b; 
+                    //printf("softLayer %lf\n", result);
                     return (*actfcn_arr[np->outfcn])(z);
                 }
             }
@@ -267,7 +267,6 @@
                 
             void operator () (double result) const {
                 static int cnt = 0;
-                printf("results in outputs %lf\n", result);
                 inf->a_out[cnt++] = result; 
                 if (cnt == num_out){
                     cnt = 0; 
@@ -283,7 +282,6 @@
 (filter_mode::parallel, PipelineTransfer(np, info)) & 
         make_filter<double, void>
 (filter_mode::serial_in_order, PipelineOutput(info, num_out)));
-printf("results?%lf\n", info->a_out[0]);
     }
     
     void ParallelComputeLayer(NetworkParams* p, LayerInfo* l, int num_out){
@@ -291,7 +289,7 @@ printf("results?%lf\n", info->a_out[0]);
     }
     
     void ReduceComputeLayer(NetworkParams* p, LayerInfo* l, int num_out, int num_in){ // is called on each layer
-        int k, j = 0;
+        int j = 0;
         for (j = 0; j < num_out; j++) // iterates through each node
         {
             // get bias to be added after MAC function 
@@ -301,22 +299,19 @@ printf("results?%lf\n", info->a_out[0]);
             // 'split' function in 'reduce' will increment from the base idx
             // to find the correct weigth idx
             int weight_idx_base = l->sum_layer + j*num_in;
-
-            NetworkLayerReduce nnReduce(p, l, num_out, weight_idx_base);
+            NetworkLayerReduce nnReduce(p, l, weight_idx_base);
             // performs reduction on each weight for a given node 'j'
-            parallel_reduce(blocked_range<int>(0, num_in, 1), nnReduce); 
-
+            parallel_reduce(blocked_range<int>(0, num_in), nnReduce);
             // override reduction output for relu functions?
             if (l->i != p->num_layers - 2) {
-                    double result = l->a_out[j] + b;
-                    l->a_out[j] = (*actfcn_arr[p->hiddenfcn])(nnReduce.my_aout); 
+                    double result = nnReduce.my_aout + b;
+                    l->a_out[j] = (*actfcn_arr[p->hiddenfcn])(result); 
                 }
             else {
-                double result = l->a_out[j] + b;
-                l->a_out[j] = (*actfcn_arr[p->outfcn])(nnReduce.my_aout); 
+                double result = nnReduce.my_aout + b;
+                l->a_out[j] = (*actfcn_arr[p->outfcn])(result); 
             }
         }
-        
     }
 
     void SequentialNeuralNet(NetworkParams* params, LayerInfo* info) {
@@ -464,7 +459,6 @@ printf("results?%lf\n", info->a_out[0]);
             sum_layer += num_in*num_out;
             sum_out_layer += num_out;
         }
-        printf("Layer outputs %lf\n", info->a_out[0]);
         MEMCPY(info->a_out, a_out_t, params->num_outputs);
         //free(a_in_t);
         //free(a_out_t);
@@ -508,7 +502,6 @@ printf("results?%lf\n", info->a_out[0]);
             sum_out_layer += num_out;
             
         }
-        printf("Layer outputs %lf\n", info->a_out[0]);
         MEMCPY(info->a_out, a_out_t, params->num_outputs);
         //free(a_in_t);
         //free(a_out_t);
