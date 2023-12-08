@@ -203,12 +203,12 @@
     class PipelineInput {
         private:
             int num_out;
-            mutable int j;
         public:
-            PipelineInput(int num_out_t): num_out(num_out_t), j(0) {}
+            PipelineInput(int num_out_t): num_out(num_out_t) {}
             
         int operator() (flow_control& fc) const {
             int j_out = 0;
+            static int j = 0;
             //printf("j = %d | j_out %d\n", j, j_out);
             if (j < num_out) {
                 j_out = j;
@@ -216,7 +216,7 @@
                 return j_out; 
             }
             else {
-                j_out = 0;
+                j = 0;
                 fc.stop();
             }
             return j_out;
