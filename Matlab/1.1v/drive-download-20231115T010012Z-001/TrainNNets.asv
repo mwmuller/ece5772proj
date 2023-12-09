@@ -12,9 +12,9 @@ inputdata_20 = x;
 uVectors_20 = u;
 
 nnet_3 = feedforwardnet([64 32]);
-nnet_5 = feedforwardnet([128 64]);
-nnet_10 = feedforwardnet([256 128]);
-nnet_20 = feedforwardnet([256 256]);
+nnet_5 = feedforwardnet([64 32]);
+nnet_10 = feedforwardnet([64 32]);
+nnet_20 = feedforwardnet([64 32]);
 inputSize = 1000;
 % determine the net to use
 
@@ -30,8 +30,14 @@ nnet_20 = train(nnet_20, inputdata_20(:, 1:(inputSize*.9)), uVectors_20(:, 1:(in
 %save newNet128_64_16.m nnet
 maxErr = zeros(4, 1);
 avgErr = zeros(4, 1);
-outputTest = zeros(4, 1);
-actual = zeros(4, 1);
+outputTest_3 = zeros(3, 1);
+outputTest_5 = zeros(5, 1);
+outputTest_10 = zeros(10, 1);
+outputTest_20 = zeros(20, 1);
+actual_3 = zeros(3, 1);
+actual_5 = zeros(5, 1);
+actual_10 = zeros(10, 1);
+actual_20 = zeros(20, 1);
 sqErr = zeros(4, 1);
 %badGuess = zeros(numcell, 1);
 %badinput = zeros(numcell, 1);
@@ -40,25 +46,31 @@ sqErr = zeros(4, 1);
 % split these for each network and output them
 for i=(inputSize*.9+1):inputSize
     % plot it here
-    outputTest(1) = nnet_3(inputdata_3(:,i));
-   % outputTest(2) = nnet_5(inputdata_5(:,i));
-    %outputTest(3) = nnet_10(inputdata_10(:,i));
-    %outputTest(4) = nnet_20(inputdata_20(:,i));
+    outputTest_3 = nnet_3(inputdata_3(:,i));
+    outputTest_5 = nnet_5(inputdata_5(:,i));
+    %outputTest_10 = nnet_10(inputdata_10(:,i));
+    %outputTest_20= nnet_20(inputdata_20(:,i));
 
-    actual(1) = uVectors_3(:,i);
-   % actual(2) = uVectors_5(:,i);
-   % actual(3) = uVectors_10(:,i);
-   % actual(4) = uVectors_20(:,i);
+    actual_3  = uVectors_3(:,i);
+    actual_5 = uVectors_5(:,i);
+   %actual_10 = uVectors_10(:,i);
+   %actual_20 = uVectors_20(:,i);
+    sqErr(1) = rms(actual_3 - outputTest_3);
+    sqErr(2) = rms(actual_5 - outputTest_5);
+    %sqErr(3) = rms(actual_10- outputTest_10);
+    %sqErr(4) = rms(actual_20- outputTest_20);
+    avgErr(1) = avgErr(1) + sqErr(1);
+    avgErr(2) = avgErr(2) + sqErr(2);
+    %avgErr(3) = avgErr(3) + sqErr(3);
+    %avgErr(4) = avgErr(4) + sqErr(4);
 
-    for j=1:4
-        sqErr(i) = rms(actual(i) - outputTest(i));
-        avgErr(i) = avgErr(i) + sqErr(i);
-    end
 end
 
-for k=1:4
+for k=1:2
     display("Avg Error: " + avgErr(k)/(inputSize*.1));
     display("Max Error: " + maxErr(k));
-    display(actual(k));
+    display(actual_3);
+    display(outputTest_3);
+    display(actual_5);
 end
 maxErr
