@@ -43,6 +43,8 @@ inPath = [
     reluLayer(Name="obs_out")
     ];
 
+
+
 meanPath = [
     fullyConnectedLayer(prod(ActInfo.Dimension), Name="mean_path")
 ];
@@ -148,6 +150,7 @@ end
 
 %%
 simOptions = rlSimulationOptions(MaxSteps=10000);
+testing = agent([0.2, 0.4, 0.3]);
 experience = sim(env,agent,simOptions);
 totalReward = sum(experience.Reward)
 % save("AgentNet_10_30_Fresh_Maxed.mat", "agent");

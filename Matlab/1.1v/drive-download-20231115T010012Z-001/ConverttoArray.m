@@ -55,9 +55,6 @@ for indexLayer = 1 : size(myParams)
             end
             inverting = 1;
         end
-        if layerNum == 2
-            display("here");
-        end
         
         if bias == 0
             % write them normally

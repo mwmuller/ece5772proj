@@ -193,7 +193,7 @@ void executeEnv(float *pack, float *uVector, int packSize, int _Time, float *sta
 // input size of vector, uMax, 
 int main(int argc, char **argv)
 {
-    //float pack[SIZE] = {0.5, 0.4, 0.6}; // [0, 0.3005, -0.3005]
+    float pack[SIZE] = {0.5, 0.4, 0.6}; // [0, 0.3005, -0.3005]
     //float pack[SIZE] = {1.0, 0.4, 0.6}; // [-.3, 0.2400, 0.06]
     //float pack[SIZE] = {0.6, 0.6, 0.4 ,0.4}; // [-.3, -.3, .3 .3]
     //float pack[SIZE] = {1.0, 0.1, 0.26, 0.6}; // [-0.300062, 0.229459, 0.135322, -0.064719]
@@ -215,11 +215,11 @@ int main(int argc, char **argv)
         inUMax = UMAX;
     }
 
-    float *pack = (float *) calloc (sizeof(float), inSIZE);
-    for(int h = 0; h < inSIZE; h++)
-    {
-        pack[h] = static_cast<float>(rand() % 1000) / 1000;
-    }
+    // float *pack = (float *) calloc (sizeof(float), inSIZE);
+    // for(int h = 0; h < inSIZE; h++)
+    // {
+    //     pack[h] = static_cast<float>(rand() % 1000) / 1000;
+    // }
     float *PackDiff = (float *) calloc(sizeof(float), inSIZE);
     float *uVector = (float *) calloc (sizeof(float), inSIZE);
     float *statePack = (float *) calloc (sizeof(float), inSIZE); // track updating states

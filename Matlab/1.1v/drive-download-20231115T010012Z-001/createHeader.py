@@ -1,17 +1,25 @@
 import os
-
+import sys
 folder_path = 'network/'
 output_weight = 'nnArchWeights.h'
 output_bias = 'nnArchBias.h'
 fileSelect = 0 # 0 = weight by default | 1 = bias file
   # Replace this with the path to your folder
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+mypath = os.path.dirname(os.path.abspath(sys.argv[0])) + "/"
+
+finalPath = mypath + folder_path
 # List all files in the folder
-files_in_folder = os.listdir(folder_path)
+files_in_folder = os.listdir(finalPath)
 files_in_folder = sorted(files_in_folder)
+
+if os.path.isfile(mypath + 'nnArchWeights.h'):
+    os.remove(mypath + 'nnArchWeights.h')
+if os.path.isfile(mypath + 'nnArchBias.h'):
+    os.remove(mypath + 'nnArchBias.h')
 with open(output_weight, 'a') as o_weight:
     with open(output_bias, 'a') as o_bias:
-        file_names = os.listdir(folder_path)
+
+        file_names = os.listdir(finalPath)
         # Iterate through the files and read their contents
         o_weight.write("const double network_weights[] = {\n")
         o_bias.write("const double network_bias[] = {\n")

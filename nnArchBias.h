@@ -526,3 +526,9 @@ const double network_bias[] = {
 0,
 0,
 };
+const double network_bias[] = {
+};
+const double network_bias[] = {
+};
+const double network_bias[] = {
+};
