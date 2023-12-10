@@ -11,25 +11,45 @@ load num_cells_20.mat
 inputdata_20 = x;
 uVectors_20 = u;
 
-nnet_3 = feedforwardnet([64 32]);
-nnet_5 = feedforwardnet([64 32]);
-nnet_10 = feedforwardnet([64 32]);
-nnet_20 = feedforwardnet([64 32]);
+nnet_3_shallow = feedforwardnet(64);
+nnet_5_shallow = feedforwardnet(64);
+nnet_10_shallow = feedforwardnet(64);
+nnet_20_shallow = feedforwardnet(64);
 inputSize = 1000;
 % determine the net to use
 
 
 % Pick the random 900 then the remaining 100 will be trained
 
-nnet_3 = train(nnet_3, inputdata_3(:, 1:(inputSize*.9)), uVectors_3(:, 1:(inputSize*.9)));
-nnet_5 = train(nnet_5, inputdata_5(:, 1:(inputSize*.9)), uVectors_5(:, 1:(inputSize*.9)));
-nnet_10 = train(nnet_10, inputdata_10(:, 1:(inputSize*.9)), uVectors_10(:, 1:(inputSize*.9)));
-nnet_20 = train(nnet_20, inputdata_20(:, 1:(inputSize*.9)), uVectors_20(:, 1:(inputSize*.9)));
+nnet_3_shallow = train(nnet_3, inputdata_3(:, 1:(inputSize*.9)), uVectors_3(:, 1:(inputSize*.9)));
+nnet_5_shallow = train(nnet_5, inputdata_5(:, 1:(inputSize*.9)), uVectors_5(:, 1:(inputSize*.9)));
+nnet_10_shallow = train(nnet_10, inputdata_10(:, 1:(inputSize*.9)), uVectors_10(:, 1:(inputSize*.9)));
+nnet_20_shallow = train(nnet_20, inputdata_20(:, 1:(inputSize*.9)), uVectors_20(:, 1:(inputSize*.9)));
+weightsCell = cell(4,1);
 
-save nnet_3.mat nnet_3
-save nnet_5.mat nnet_5
-save nnet_10.mat nnet_10
-save nnet_20.mat nnet_20
+tesagain = nnet_3.numWeightElements
+nnet_3.layerWeights
+nnet_3.biases
+nnet_3.layerConnect
+nnet_3.outputConnect
+view(nnet_3)
+netsCell = {nnet_3, nnet_5, nnet_10, nnet_20};
+
+for y=1:4
+    tempnet = netsCell{y};
+    tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2}, tempnet.B{2}, tempnet.OW{3}, tempnet.B{3} };
+    weightsCell{y} = tempNetLearnables;
+end
+
+
+% create the weights for each cell to be placed into the python script
+weightsCell = {nnet_3wb, nnet_5wb, nnet_10wb, nnet_20wb};
+
+
+%save nnet_3_shallow.mat nnet_3_shallow
+%save nnet_5_shallow.mat nnet_5_shallow
+%save nnet_10_shallow.mat nnet_10_shallow
+%save nnet_20_shallow.mat nnet_20_shallow
 % plot the error over time based on uvector vs output from nn
 
 %save newNet128_64_16.m nnet
@@ -51,10 +71,10 @@ sqErr = zeros(4, 1);
 % split these for each network and output them
 for i=(inputSize*.9+1):inputSize
     % plot it here
-    outputTest_3 = nnet_3(inputdata_3(:,i));
-    outputTest_5 = nnet_5(inputdata_5(:,i));
-    outputTest_10 = nnet_10(inputdata_10(:,i));
-    outputTest_20= nnet_20(inputdata_20(:,i));
+    outputTest_3 = nnet_3_shallow(inputdata_3(:,i));
+    outputTest_5 = nnet_5_shallow(inputdata_5(:,i));
+    outputTest_10 = nnet_10_shallow(inputdata_10(:,i));
+    outputTest_20= nnet_20_shallow(inputdata_20(:,i));
 
     actual_3  = uVectors_3(:,i);
     actual_5 = uVectors_5(:,i);

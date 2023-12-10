@@ -11,20 +11,40 @@ load num_cells_20.mat
 inputdata_20 = x;
 uVectors_20 = u;
 
-nnet_3 = feedforwardnet([64 32]);
-nnet_5 = feedforwardnet([64 32]);
-nnet_10 = feedforwardnet([64 32]);
-nnet_20 = feedforwardnet([64 32]);
+%nnet_3 = feedforwardnet([64 32]);
+%nnet_5 = feedforwardnet([64 32]);
+%nnet_10 = feedforwardnet([64 32]);
+%nnet_20 = feedforwardnet([64 32]);
 inputSize = 1000;
 % determine the net to use
 
 
 % Pick the random 900 then the remaining 100 will be trained
 
-nnet_3 = train(nnet_3, inputdata_3(:, 1:(inputSize*.9)), uVectors_3(:, 1:(inputSize*.9)));
-nnet_5 = train(nnet_5, inputdata_5(:, 1:(inputSize*.9)), uVectors_5(:, 1:(inputSize*.9)));
-nnet_10 = train(nnet_10, inputdata_10(:, 1:(inputSize*.9)), uVectors_10(:, 1:(inputSize*.9)));
-nnet_20 = train(nnet_20, inputdata_20(:, 1:(inputSize*.9)), uVectors_20(:, 1:(inputSize*.9)));
+%nnet_3 = train(nnet_3, inputdata_3(:, 1:(inputSize*.9)), uVectors_3(:, 1:(inputSize*.9)));
+%nnet_5 = train(nnet_5, inputdata_5(:, 1:(inputSize*.9)), uVectors_5(:, 1:(inputSize*.9)));
+%nnet_10 = train(nnet_10, inputdata_10(:, 1:(inputSize*.9)), uVectors_10(:, 1:(inputSize*.9)));
+%nnet_20 = train(nnet_20, inputdata_20(:, 1:(inputSize*.9)), uVectors_20(:, 1:(inputSize*.9)));
+weightsCell = cell(4,1);
+
+tesagain = nnet_3.numOutputs
+netsCell = {nnet_3, nnet_5, nnet_10, nnet_20};
+
+for y=1:4
+    tempnet = netsCell{y};
+    tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2}, tempnet.B{2}, tempnet.LW{1}, tempnet.B{3} };
+    weightsCell{y} = tempNetLearnables;
+end
+
+
+% create the weights for each cell to be placed into the python script
+weightsCell = {nnet_3wb, nnet_5wb, nnet_10wb, nnet_20wb};
+
+
+%save nnet_3.mat nnet_3
+%save nnet_5.mat nnet_5
+%save nnet_10.mat nnet_10
+%save nnet_20.mat nnet_20
 % plot the error over time based on uvector vs output from nn
 
 %save newNet128_64_16.m nnet
@@ -48,29 +68,35 @@ for i=(inputSize*.9+1):inputSize
     % plot it here
     outputTest_3 = nnet_3(inputdata_3(:,i));
     outputTest_5 = nnet_5(inputdata_5(:,i));
-    %outputTest_10 = nnet_10(inputdata_10(:,i));
-    %outputTest_20= nnet_20(inputdata_20(:,i));
+    outputTest_10 = nnet_10(inputdata_10(:,i));
+    outputTest_20= nnet_20(inputdata_20(:,i));
 
     actual_3  = uVectors_3(:,i);
     actual_5 = uVectors_5(:,i);
-   %actual_10 = uVectors_10(:,i);
-   %actual_20 = uVectors_20(:,i);
+    actual_10 = uVectors_10(:,i);
+    actual_20 = uVectors_20(:,i);
     sqErr(1) = rms(actual_3 - outputTest_3);
     sqErr(2) = rms(actual_5 - outputTest_5);
-    %sqErr(3) = rms(actual_10- outputTest_10);
-    %sqErr(4) = rms(actual_20- outputTest_20);
+    sqErr(3) = rms(actual_10- outputTest_10);
+    sqErr(4) = rms(actual_20- outputTest_20);
+
     avgErr(1) = avgErr(1) + sqErr(1);
     avgErr(2) = avgErr(2) + sqErr(2);
-    %avgErr(3) = avgErr(3) + sqErr(3);
-    %avgErr(4) = avgErr(4) + sqErr(4);
+    avgErr(3) = avgErr(3) + sqErr(3);
+    avgErr(4) = avgErr(4) + sqErr(4);
 
 end
 
-for k=1:2
+for k=1:4
     display("Avg Error: " + avgErr(k)/(inputSize*.1));
     display("Max Error: " + maxErr(k));
-    display(actual_3);
-    display(outputTest_3);
-    display(actual_5);
+   %display(actual_3);
+   %display(outputTest_3);
+   %display(actual_5);
+   %display(outputTest_5);
+   %display(actual_10);
+   %display(outputTest_10);
+   %display(actual_20);
+   %display(outputTest_20);
 end
 maxErr
