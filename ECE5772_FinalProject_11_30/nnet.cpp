@@ -90,7 +90,7 @@ int main(){
             network_weights,
             network_inputs, 
             relu,
-            softplus
+            purelin
         };  
         
     #ifdef EN_SEQ

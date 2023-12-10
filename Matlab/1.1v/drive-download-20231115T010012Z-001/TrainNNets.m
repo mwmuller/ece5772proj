@@ -11,20 +11,16 @@ load num_cells_20.mat
 inputdata_20 = x;
 uVectors_20 = u;
 
-nnet_3_shallow = feedforwardnet(64);
+nnet_3_shallow = feedforwardnet(128);
 nnet_3_shallow.layers{1}.transferFcn = 'poslin';
-nnet_3_shallow.layers{2}.transferFcn = 'softmax';
-nnet_5_shallow = feedforwardnet(64);
+nnet_5_shallow = feedforwardnet(128);
 nnet_5_shallow.layers{1}.transferFcn = 'poslin';
-nnet_5_shallow.layers{2}.transferFcn = 'softmax';
-nnet_10_shallow = feedforwardnet([32 32]);
+nnet_10_shallow = feedforwardnet([64 32]);
 nnet_10_shallow.layers{1}.transferFcn = 'poslin';
 nnet_10_shallow.layers{2}.transferFcn = 'poslin';
-nnet_10_shallow.layers{3}.transferFcn = 'softmax';
-nnet_20_shallow = feedforwardnet([32, 32]);
+nnet_20_shallow = feedforwardnet([64, 32]);
 nnet_20_shallow.layers{1}.transferFcn = 'poslin';
 nnet_20_shallow.layers{2}.transferFcn = 'poslin';
-nnet_20_shallow.layers{3}.transferFcn = 'softmax';
 inputSize = 1000;
 % determine the net to use
 randidx = randperm(inputSize*.9);
@@ -41,21 +37,25 @@ netsCell = {nnet_3_shallow, nnet_5_shallow, nnet_10_shallow, nnet_20_shallow};
 
 for y=1:4
     tempnet = netsCell{y};
-    tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2}, tempnet.B{2}};
+    if y <= 2
+        tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2}, tempnet.B{2}};
+    else
+        tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2,1}, tempnet.B{2}, tempnet.LW{3,2}, tempnet.B{3}};
+    end
     weightsCell{y} = tempNetLearnables;
 end
 
 
 
-%save nnet_3_shallow.mat nnet_3_shallow
-%save nnet_5_shallow.mat nnet_5_shallow
-%save nnet_10_shallow.mat nnet_10_shallow
-%save nnet_20_shallow.mat nnet_20_shallow
-load nnet_3_shallow.mat nnet_3_shallow
-load nnet_5_shallow.mat nnet_5_shallow
-load nnet_10_shallow.mat nnet_10_shallow
-load nnet_20_shallow.mat nnet_20_shallow
-%save shallowWeights.mat weightsCell
+save nnet_3_shallow_v3.mat nnet_3_shallow
+save nnet_5_shallow_v3.mat nnet_5_shallow
+save nnet_10_shallow_v3.mat nnet_10_shallow
+save nnet_20_shallow_v3.mat nnet_20_shallow
+%load nnet_3_shallow.mat nnet_3_shallow
+%load nnet_5_shallow.mat nnet_5_shallow
+%load nnet_10_shallow.mat nnet_10_shallow
+%load nnet_20_shallow.mat nnet_20_shallow
+save shallowWeights.mat weightsCell
 % plot the error over time based on uvector vs output from nn
 
 %save newNet128_64_16.m nnet
