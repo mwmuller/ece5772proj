@@ -17,39 +17,31 @@ nnet_10_shallow = feedforwardnet(64);
 nnet_20_shallow = feedforwardnet(64);
 inputSize = 1000;
 % determine the net to use
-
+randidx = randperm(inputSize*.9);
 
 % Pick the random 900 then the remaining 100 will be trained
 
-nnet_3_shallow = train(nnet_3, inputdata_3(:, 1:(inputSize*.9)), uVectors_3(:, 1:(inputSize*.9)));
-nnet_5_shallow = train(nnet_5, inputdata_5(:, 1:(inputSize*.9)), uVectors_5(:, 1:(inputSize*.9)));
-nnet_10_shallow = train(nnet_10, inputdata_10(:, 1:(inputSize*.9)), uVectors_10(:, 1:(inputSize*.9)));
-nnet_20_shallow = train(nnet_20, inputdata_20(:, 1:(inputSize*.9)), uVectors_20(:, 1:(inputSize*.9)));
+nnet_3_shallow = train(nnet_3_shallow, inputdata_3(:, randidx), uVectors_3(:, randidx));
+nnet_5_shallow = train(nnet_5_shallow, inputdata_5(:, randidx), uVectors_5(:, randidx));
+nnet_10_shallow = train(nnet_10_shallow, inputdata_10(:, randidx), uVectors_10(:, randidx));
+nnet_20_shallow = train(nnet_20_shallow, inputdata_20(:, randidx), uVectors_20(:, randidx));
 weightsCell = cell(4,1);
 
-tesagain = nnet_3.numWeightElements
-nnet_3.layerWeights
-nnet_3.biases
-nnet_3.layerConnect
-nnet_3.outputConnect
-view(nnet_3)
-netsCell = {nnet_3, nnet_5, nnet_10, nnet_20};
+netsCell = {nnet_3_shallow, nnet_5_shallow, nnet_10_shallow, nnet_20_shallow};
 
 for y=1:4
     tempnet = netsCell{y};
-    tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2}, tempnet.B{2}, tempnet.OW{3}, tempnet.B{3} };
+    tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2}, tempnet.B{2}};
     weightsCell{y} = tempNetLearnables;
 end
 
-
-% create the weights for each cell to be placed into the python script
-weightsCell = {nnet_3wb, nnet_5wb, nnet_10wb, nnet_20wb};
 
 
 %save nnet_3_shallow.mat nnet_3_shallow
 %save nnet_5_shallow.mat nnet_5_shallow
 %save nnet_10_shallow.mat nnet_10_shallow
 %save nnet_20_shallow.mat nnet_20_shallow
+%save shallowWeights.mat weightsCell
 % plot the error over time based on uvector vs output from nn
 
 %save newNet128_64_16.m nnet
