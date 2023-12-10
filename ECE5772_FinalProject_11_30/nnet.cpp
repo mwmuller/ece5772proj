@@ -10,8 +10,8 @@
 #include <sys/time.h>
 #include <tbb/tbb.h>
 #include "nn_fun.h"
-#include "nnArchBias.h"
-#include "nnArchWeights.h"
+#include "nnArchBias_3.h"
+#include "nnArchWeights_3.h"
 
 
 #define EN_SEQ
@@ -39,10 +39,10 @@ int main(){
      */
      
     /* PARAMETER INITIALIZATION */
-    int num_layers  = 4;
+    int num_layers  = 3;
     int num_inputs  = 3;
     int num_outputs = 3;
-    int layer_sizes[] = {3, 256, 256, 3}; // input - hidden layers - output
+    int layer_sizes[] = {3, 64, 3}; // input - hidden layers - output
     
     // double network_biases[] = 
     //         {
@@ -69,7 +69,7 @@ int main(){
     //            // output layer weights
     //            -0.0913, -0.4448, 0.1683, -2.2543, 0.5929         
     //         };
-    double network_inputs[] = {0.2, 0.3, 0.5}; 
+    double network_inputs[] = {0.8147, 0.9058, 0.1270}; 
     double *a_in  = D_CALLOC(num_inputs);
     double *a_out = D_CALLOC(num_outputs);
     int sum_layer;

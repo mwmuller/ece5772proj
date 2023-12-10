@@ -6,15 +6,25 @@ inputdata_5 = x;
 uVectors_5 = u;
 load num_cells_10.mat
 inputdata_10 = x;
-uVectors_10 = x;
+uVectors_10 = u;
 load num_cells_20.mat
 inputdata_20 = x;
 uVectors_20 = u;
 
 nnet_3_shallow = feedforwardnet(64);
+nnet_3_shallow.layers{1}.transferFcn = 'poslin';
+nnet_3_shallow.layers{2}.transferFcn = 'softmax';
 nnet_5_shallow = feedforwardnet(64);
-nnet_10_shallow = feedforwardnet(64);
-nnet_20_shallow = feedforwardnet(64);
+nnet_5_shallow.layers{1}.transferFcn = 'poslin';
+nnet_5_shallow.layers{2}.transferFcn = 'softmax';
+nnet_10_shallow = feedforwardnet([32 32]);
+nnet_10_shallow.layers{1}.transferFcn = 'poslin';
+nnet_10_shallow.layers{2}.transferFcn = 'poslin';
+nnet_10_shallow.layers{3}.transferFcn = 'softmax';
+nnet_20_shallow = feedforwardnet([32, 32]);
+nnet_20_shallow.layers{1}.transferFcn = 'poslin';
+nnet_20_shallow.layers{2}.transferFcn = 'poslin';
+nnet_20_shallow.layers{3}.transferFcn = 'softmax';
 inputSize = 1000;
 % determine the net to use
 randidx = randperm(inputSize*.9);
@@ -41,6 +51,10 @@ end
 %save nnet_5_shallow.mat nnet_5_shallow
 %save nnet_10_shallow.mat nnet_10_shallow
 %save nnet_20_shallow.mat nnet_20_shallow
+load nnet_3_shallow.mat nnet_3_shallow
+load nnet_5_shallow.mat nnet_5_shallow
+load nnet_10_shallow.mat nnet_10_shallow
+load nnet_20_shallow.mat nnet_20_shallow
 %save shallowWeights.mat weightsCell
 % plot the error over time based on uvector vs output from nn
 
@@ -84,6 +98,7 @@ for i=(inputSize*.9+1):inputSize
 
 end
 
+output = nnet_3_shallow([0.8147, 0.9058, 0.1270]');
 for k=1:4
     display("Avg Error: " + avgErr(k)/(inputSize*.1));
     display("Max Error: " + maxErr(k));
