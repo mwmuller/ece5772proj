@@ -1,0 +1,148 @@
+Test Run results:
+
+======================================3 Cell Pack Information ==============================================
+Cpp Params:
+
+CPP Outputs:
+
+Matlab Output:
+
+
+======================================5 Cell Pack Information ==============================================
+
+CPP Params:
+
+// 5 Cell Pack
+int num_layers  = 6;
+int num_inputs  = 5;
+int num_outputs = 5;
+int layer_sizes[] = {5, 64, 64, 64, 64, 5}; // input - hidden layers - output
+
+CPP Outputs:
+
+Computation Time (sequential): 53.000000
+Output(s)
+a_out[0]: 0.293168
+a_out[1]: 0.440512
+a_out[2]: -0.308851
+a_out[3]: -0.095202
+a_out[4]: -0.342049
+
+Computation Time (parallel_for): 448.000000
+Output(s)
+a_out[0]: 0.293168
+a_out[1]: 0.440512
+a_out[2]: -0.308851
+a_out[3]: -0.095202
+a_out[4]: -0.342049
+
+Computation Time (parallel_pipeline): 2020.000000
+Output(s)
+a_out[0]: 0.293168
+a_out[1]: 0.440512
+a_out[2]: -0.308851
+a_out[3]: -0.095202
+a_out[4]: -0.342049
+
+Computation Time (parallel_reduce): 138.000000
+Output(s)
+a_out[0]: 0.293168
+a_out[1]: 0.440512
+a_out[2]: -0.308851
+a_out[3]: -0.095202
+a_out[4]: -0.342049
+
+
+Matlab Output:
+
+0.2932
+0.4405
+-0.3089
+-0.0952
+-0.3420
+
+
+======================================10 Cell Pack Information ==============================================
+
+Cpp Params:
+// 10 Cell Pack
+int num_layers  = 6;
+int num_inputs  = 10;
+int num_outputs = 10;
+int layer_sizes[] = {10, 96, 128, 128, 96, 10}; // input - hidden layers - output
+
+double network_inputs[] = {0.8147, 0.9058, 0.1270, 0.4, 0.1, 0.5, 0.6, 0.9, 0.1, 0.32}; 
+
+CPP Outputs:
+
+Computation Time (sequential): 207.000000
+Output(s)
+a_out[0]: 0.312440
+a_out[1]: 0.397951
+a_out[2]: -0.316131
+a_out[3]: -0.072032
+a_out[4]: -0.338204
+a_out[5]: 0.018063
+a_out[6]: 0.122942
+a_out[7]: 0.382888
+a_out[8]: -0.332348
+a_out[9]: -0.142006
+
+Computation Time (parallel_for): 622.000000
+Output(s)
+a_out[0]: 0.312440
+a_out[1]: 0.397951
+a_out[2]: -0.316131
+a_out[3]: -0.072032
+a_out[4]: -0.338204
+a_out[5]: 0.018063
+a_out[6]: 0.122942
+a_out[7]: 0.382888
+a_out[8]: -0.332348
+a_out[9]: -0.142006
+
+Computation Time (parallel_pipeline): 935.000000
+Output(s)
+a_out[0]: 0.312440
+a_out[1]: 0.397951
+a_out[2]: -0.316131
+a_out[3]: -0.072032
+a_out[4]: -0.338204
+a_out[5]: 0.018063
+a_out[6]: 0.122942
+a_out[7]: 0.382888
+a_out[8]: -0.332348
+a_out[9]: -0.142006
+
+Computation Time (parallel_reduce): 185.000000
+Output(s)
+a_out[0]: 0.312440
+a_out[1]: 0.397951
+a_out[2]: -0.316131
+a_out[3]: -0.072032
+a_out[4]: -0.338204
+a_out[5]: 0.018063
+a_out[6]: 0.122942
+a_out[7]: 0.382888
+a_out[8]: -0.332348
+a_out[9]: -0.142006
+
+Matlab Output:
+
+0.3124
+0.3980
+-0.3161
+-0.0720
+-0.3382
+0.0181
+0.1229
+0.3829
+-0.3323
+-0.1420
+
+======================================20 Cell Pack Information ==============================================
+Cpp Params:
+
+CPP Outputs:
+
+Matlab Output:

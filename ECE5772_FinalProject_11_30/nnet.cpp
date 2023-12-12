@@ -10,9 +10,21 @@
 #include <sys/time.h>
 #include <tbb/tbb.h>
 #include "nn_fun.h"
-#include "nnArchBias_3.h"
-#include "nnArchWeights_3.h"
+// 3 Cell Pack
+//#include "nnArchBias_3.h"
+//#include "nnArchWeights_3.h"
 
+// 5 Cell Pack
+//#include "nnArchBias_5.h"
+//#include "nnArchWeights_5.h"
+
+// 10 Cell Pack
+// #include "nnArchBias_10.h"
+// #include "nnArchWeights_10.h"
+
+// 20 Cell Pack
+#include "nnArchBias_20.h"
+#include "nnArchWeights_20.h"
 
 #define EN_SEQ
 #define EN_PARFOR
@@ -39,11 +51,24 @@ int main(){
      */
      
     /* PARAMETER INITIALIZATION */
-    int num_layers  = 3;
-    int num_inputs  = 3;
-    int num_outputs = 3;
-    int layer_sizes[] = {3, 64, 3}; // input - hidden layers - output
+
+    // 5 Cell Pack
+    // int num_layers  = 6;
+    // int num_inputs  = 5;
+    // int num_outputs = 5;
+    // int layer_sizes[] = {5, 64, 64, 64, 64, 5}; // input - hidden layers - output
     
+    // 10 Cell Pack
+    // int num_layers  = 6;
+    // int num_inputs  = 10;
+    // int num_outputs = 10;
+    // int layer_sizes[] = {10, 96, 128, 128, 96, 10}; // input - hidden layers - output
+
+    // 20 Cell Pack
+    int num_layers  = 7;
+    int num_inputs  = 20;
+    int num_outputs = 20;
+    int layer_sizes[] = {20, 128, 180, 200, 180, 128, 20}; // input - hidden layers - output
     // double network_biases[] = 
     //         {
     //             0.2726, -0.8559, 0.1930, 0.0695, 0.7407,
@@ -69,7 +94,19 @@ int main(){
     //            // output layer weights
     //            -0.0913, -0.4448, 0.1683, -2.2543, 0.5929         
     //         };
-    double network_inputs[] = {0.8147, 0.9058, 0.1270}; 
+    // 5 Cell pack
+    //double network_inputs[] = {0.8147, 0.9058, 0.1270, 0.4, 0.1}; 
+    // 10 Cell pack
+    //double network_inputs[] = {0.8147, 0.9058, 0.1270, 0.4, 0.1, 0.5, 0.6, 0.9, 0.1, 0.32}; 
+
+    // 20 Cell Pack
+    double network_inputs[] = {
+    0.8147, 0.9058, 0.1270, 0.4, 0.1, 
+    0.8147, 0.9058, 0.1270, 0.4, 0.1, 
+    0.8147, 0.9058, 0.1270, 0.4, 0.1, 
+    0.8147, 0.9058, 0.1270, 0.4, 0.1};
+
+    
     double *a_in  = D_CALLOC(num_inputs);
     double *a_out = D_CALLOC(num_outputs);
     int sum_layer;
