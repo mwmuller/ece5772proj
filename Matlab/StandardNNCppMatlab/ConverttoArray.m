@@ -6,7 +6,7 @@ folder = ["network_3\", "network_5\", "network_10\", "network_20\"];
 
 
 % load your net and CHECK THE NAMES
-load net_20_cell_nopfcn_12.mat
+load net_20_cell_nopfcn.mat
 load net_3_cell_nopfcn.mat
 load net_5_cell_nopfcn.mat
 load net_10_cell_nopfcn.mat
