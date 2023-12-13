@@ -169,9 +169,9 @@ int main(){
     /* PARAMETER INITIALIZATION */
     //3 Cell Pack
     int num_layers  = 6;
-    int num_inputs  = 5;
-    int num_outputs = 5;
-    int layer_sizes_3[] = {5, 64, 64, 64, 64, 5}; // input - hidden layers - output
+    int num_inputs  = 3;
+    int num_outputs = 3;
+    int layer_sizes_3[] = {3, 48, 48, 48, 48, 3}; // input - hidden layers - output
     // 3 Cell Pack
     double network_inputs_3[] = {0.8147, 0.9058, 0.1270};
 
