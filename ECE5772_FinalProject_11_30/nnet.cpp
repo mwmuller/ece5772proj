@@ -16,6 +16,7 @@
 #define EN_PARFOR
 #define EN_PARPIP
 #define EN_PARRED
+#define NUM_RUNS (20)
 
 #define ENABLE_BIG_NETWORK
 #define I_CALLOC(x) (int*)calloc(x, sizeof(int)); 
@@ -63,16 +64,20 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
             };
         
         /* FORWARD PROPAGATION */ 
-        gettimeofday(&seq_start, NULL);                                
-        SequentialNeuralNet(&params, &info);
-        gettimeofday(&seq_end, NULL); 
-        
-        // timing
-        seq_us = (seq_end.tv_sec - seq_start.tv_sec)*1000000 + seq_end.tv_usec - seq_start.tv_usec;
-        printf("\nComputation Time (sequential): %lf\n", seq_us);
-        printf("Output(s)\n"); 
+        for(int y = 0; y < NUM_RUNS; y++)
+        {
+            gettimeofday(&seq_start, NULL);                                
+            SequentialNeuralNet(&params, &info);
+            gettimeofday(&seq_end, NULL); 
+            
+            // timing
+            seq_us += (seq_end.tv_sec - seq_start.tv_sec)*1000000 + seq_end.tv_usec - seq_start.tv_usec;
+        }
+        printf("\n20 Run Avg Computation Time (sequential): %lf\n", seq_us/NUM_RUNS);
+            //printf("Output(s)\n"); 
 
-        printOutput(info.a_out, num_outputs);
+
+        //printOutput(info.a_out, num_outputs);
 
     #endif
     
@@ -86,18 +91,22 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
                 a_in,
                 a_out
             };
-        /* FORWARD PROPAGATION */   
-        gettimeofday(&pf_start, NULL);                      
-        ParForNeuralNet(&params, &info);
-        gettimeofday(&pf_end, NULL);
 
-        a_out[0] = info.a_out[0];
-        // Without the above statement, we just pass the same value along
-        pfor_us = (pf_end.tv_sec - pf_start.tv_sec)*1000000 + pf_end.tv_usec - pf_start.tv_usec;
-        printf("\nComputation Time (parallel_for): %lf\n", pfor_us);
-        printf("Output(s)\n");
+        for(int y = 0; y < NUM_RUNS; y++)
+        {
+            /* FORWARD PROPAGATION */   
+            gettimeofday(&pf_start, NULL);                      
+            ParForNeuralNet(&params, &info);
+            gettimeofday(&pf_end, NULL);
 
-        printOutput(info.a_out, num_outputs);
+            a_out[0] = info.a_out[0];
+            // Without the above statement, we just pass the same value along
+            pfor_us += (pf_end.tv_sec - pf_start.tv_sec)*1000000 + pf_end.tv_usec - pf_start.tv_usec;
+        }
+        printf("\n20 Run Avg Computation Time (parallel_for): %lf\n", pfor_us/NUM_RUNS);
+        //printf("Output(s)\n");
+
+        //printOutput(info.a_out, num_outputs);
 
     #endif
     
@@ -111,18 +120,20 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
                 a_in,
                 a_out
             };
-        
-        // parallel pipelined implementation   
-        gettimeofday(&pp_start, NULL);
-        ParPipNeuralNet(&params, &info);
-        gettimeofday(&pp_end, NULL); 
-        
-        a_out[0] = info.a_out[0];
-        ppip_us = (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
-        printf("\nComputation Time (parallel_pipeline): %lf\n", ppip_us);
-        printf("Output(s)\n");
+        for(int y = 0; y < NUM_RUNS; y++)
+        {
+            // parallel pipelined implementation   
+            gettimeofday(&pp_start, NULL);
+            ParPipNeuralNet(&params, &info);
+            gettimeofday(&pp_end, NULL); 
+            
+            a_out[0] = info.a_out[0];
+            ppip_us += (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
+        }
+        printf("\n20 Run Avg Computation Time (parallel_pipeline): %lf\n", ppip_us/NUM_RUNS);
+        //printf("Output(s)\n");
 
-        printOutput(info.a_out, num_outputs);
+        //printOutput(info.a_out, num_outputs);
     
     #endif
 
@@ -136,16 +147,21 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
                 a_in,
                 a_out
             };
-        // parallel reduce implementation   
-        gettimeofday(&pr_start, NULL);
-        ParRedNeuralNet(&params, &info);  
-        gettimeofday(&pr_end, NULL); 
-        a_out[0] = info.a_out[0];
-        pred_us = (pr_end.tv_sec - pr_start.tv_sec)*1000000 + pr_end.tv_usec - pr_start.tv_usec;
-        printf("\nComputation Time (parallel_reduce): %lf\n", pred_us);
-        printf("Output(s)\n");
 
-        printOutput(info.a_out, num_outputs);
+        for(int y = 0; y < NUM_RUNS; y++)
+        {
+            // parallel reduce implementation   
+            gettimeofday(&pr_start, NULL);
+            ParRedNeuralNet(&params, &info);  
+            gettimeofday(&pr_end, NULL); 
+            a_out[0] = info.a_out[0];
+            pred_us += (pr_end.tv_sec - pr_start.tv_sec)*1000000 + pr_end.tv_usec - pr_start.tv_usec;
+        }
+
+        printf("\n20 Run Avg Computation Time (parallel_reduce): %lf\n", pred_us/NUM_RUNS);
+        //printf("Output(s)\n");
+
+       //printOutput(info.a_out, num_outputs);
     
     #endif
     
@@ -207,10 +223,10 @@ int main(){
                     network_biases_10, network_weights_10);
 
     //20 Cell Pack
-    num_layers  = 8;
+    num_layers  = 7;
     num_inputs  = 20;
     num_outputs = 20;
-    int layer_sizes_20[] = {20, 128, 128, 128, 128, 128, 128, 20}; // input - hidden layers - output
+    int layer_sizes_20[] = {20, 256, 256, 256, 256, 256, 20}; // input - hidden layers - output
 
     // 20 Cell Pack
     double network_inputs_20[] = {

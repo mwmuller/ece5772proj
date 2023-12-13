@@ -27,9 +27,10 @@ for y=1:size(netsCell,2)
     else
         tempNetLearnables = {tempnet.IW{1}, tempnet.B{1}, tempnet.LW{2,1}, tempnet.B{2}, ...
             tempnet.LW{3,2}, tempnet.B{3}, tempnet.LW{4,3}, tempnet.B{4}, ...
-            tempnet.LW{5,4}, tempnet.B{5}, tempnet.LW{6,5}, tempnet.B{6}, ...
-            tempnet.LW{7,6}, tempnet.B{7}};
+            tempnet.LW{5,4}, tempnet.B{5}, tempnet.LW{6,5}, tempnet.B{6}};
     end
+    % output size information for CPP usage
+    tempnet.LW
     weightsCell{y} = tempNetLearnables';
 end
 
