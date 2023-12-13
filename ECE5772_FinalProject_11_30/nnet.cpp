@@ -10,21 +10,7 @@
 #include <sys/time.h>
 #include <tbb/tbb.h>
 #include "nn_fun.h"
-// 3 Cell Pack
-#include "nnArchBias_3.h"
-#include "nnArchWeights_3.h"
-
-// 5 Cell Pack
-#include "nnArchBias_5.h"
-#include "nnArchWeights_5.h"
-
-// 10 Cell Pack
-#include "nnArchBias_10.h"
-#include "nnArchWeights_10.h"
-
-// 20 Cell Pack
-#include "nnArchBias_20.h"
-#include "nnArchWeights_20.h"
+#include "FinishedNets/allNetworks.h"
 
 #define EN_SEQ
 #define EN_PARFOR
