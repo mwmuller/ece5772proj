@@ -238,13 +238,18 @@
                 double b = np->network_biases[inf->sum_out_layer + j];
                 /* weight number */
                 //printf("Params: layerNum %d | num_in %d | num_out %d\n", layerNum, num_in, num_out);
-                for(int k = 0; k < num_in; k++){
-                    double w    = np->network_weights[inf->sum_layer + j*num_in + k];
-                    //printf("Weight %lf\n", w);
-                    double inp  = inf->a_in[k];
-                    double outp = w*inp; 
-                    result += outp; 
-                }
+                // for(int k = 0; k < num_in; k++){
+                //     double w    = np->network_weights[inf->sum_layer + j*num_in + k];
+                //     //printf("Weight %lf\n", w);
+                //     double inp  = inf->a_in[k];
+                //     double outp = w*inp; 
+                //     result += outp; 
+                // }
+                int weight_idx_base = inf->sum_layer + j*num_in;
+                NetworkLayerReduce nnReduce(np, inf, weight_idx_base);
+                // performs reduction on each weight for a given node 'j'
+                parallel_reduce(blocked_range<int>(0, num_in, (num_in)), nnReduce);
+                result = nnReduce.my_aout;
                 /* if we ARE NOT computing the output layer */
                 if (layerNum != np->num_layers - 2) {
                     double z = result + b;
@@ -282,11 +287,11 @@
     void RunLayerPipeline (int ntoken, int num_out, NetworkParams* np, LayerInfo* info) { 
         parallel_pipeline(ntoken, 
         make_filter<void, int>
-(filter::serial_in_order, PipelineInput(num_out)) &
+(filter_mode::serial_in_order, PipelineInput(num_out)) &
         make_filter<int, double>
-(filter::parallel, PipelineTransfer(np, info)) & 
+(filter_mode::parallel, PipelineTransfer(np, info)) & 
         make_filter<double, void>
-(filter::serial_in_order, PipelineOutput(info, num_out)));
+(filter_mode::serial_in_order, PipelineOutput(info, num_out)));
     }
     
     void ParallelComputeLayer(NetworkParams* p, LayerInfo* l, int num_out){
