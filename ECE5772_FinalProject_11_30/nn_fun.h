@@ -282,11 +282,11 @@
     void RunLayerPipeline (int ntoken, int num_out, NetworkParams* np, LayerInfo* info) { 
         parallel_pipeline(ntoken, 
         make_filter<void, int>
-(filter::serial_in_order, PipelineInput(num_out)) &
+(filter_mode::serial_in_order, PipelineInput(num_out)) &
         make_filter<int, double>
-(filter::parallel, PipelineTransfer(np, info)) & 
+(filter_mode::parallel, PipelineTransfer(np, info)) & 
         make_filter<double, void>
-(filter::serial_in_order, PipelineOutput(info, num_out)));
+(filter_mode::serial_in_order, PipelineOutput(info, num_out)));
     }
     
     void ParallelComputeLayer(NetworkParams* p, LayerInfo* l, int num_out){
@@ -419,13 +419,9 @@
             sum_out_layer += num_out;
             
         }
-        //printf("awdawdasd %lf\n", info->a_out[0]);
-       // printf("lets guess %lf\n", a_out_t[0]);
         MEMCPY(info->a_out, a_out_t, params->num_outputs);
         //free(a_in_t); // this clears info->aout since memcpy doesn't redefine the address
         //free(a_out_t);
-       // printf("awdawdasd %lf\n", info->a_out[0]);
-        //printf("lets guess %lf\n", a_out_t[0]);
          
     }
     

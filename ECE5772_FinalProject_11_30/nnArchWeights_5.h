@@ -1,4 +1,4 @@
-const double network_weights[] = {
+const double network_weights_5[] = {
 
  // Description of following elements Weights_L1Node001
 0.422186363410892,
