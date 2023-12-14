@@ -31,7 +31,7 @@ all: $(OBJS)
 nnet: nnet.cpp
 	$(CPP) $(STD11) -o $@ $^ $(TBB)
 
-simulate: nnet_1.cpp
+simulate: simulate.cpp
 	$(CPP) $(STD11) -o $@ $^ $(TBB)
 # library
 

@@ -157,47 +157,6 @@
                     }
                   }
             }  
-        /*
-        public: 
-        
-            NetworkParams params;
-            LayerInfo info;
-            
-            NetworkLayer(NetworkParams params_in, LayerInfo info_in){
-                params = params_in;
-                info = info_in;
-            }
-            
-            void operator()(const blocked_range<int> &r) const{
-                
-                int layerNum = info.i; 
-                int num_in  = params.layer_sizes[layerNum];
-                int num_out = params.layer_sizes[layerNum+1]; 
-            
-                for(int j = r.begin(); j != r.end(); j++){
-                    
-                    double b = params.network_biases[info.sum_out_layer + j];
-                    
-                    // weight number  
-                    for(int k = 0; k < num_in; k++){
-                        double w    = params.network_weights[info.sum_layer + j*num_in + k];
-                        double inp  = info.a_in[k];
-                        double outp = w*inp; 
-                        info.a_out[j] += outp; 
-                    }
-                    
-                    if (layerNum != params.num_layers - 2) {
-                        double result = info.a_out[j] + b;
-                        info.a_out[j] = (*actfcn_arr[params.hiddenfcn])(result); 
-                    }
-                    else {
-                        double result = info.a_out[j] + b;
-                        info.a_out[j] = (*actfcn_arr[params.outfcn])(result); 
-                    }
-                  }
-            }
-            */       
-            
     };
     
     class PipelineInput {

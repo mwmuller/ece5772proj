@@ -156,48 +156,7 @@
                         info->a_out[j] = (*actfcn_arr[params->outfcn])(result); 
                     }
                   }
-            }  
-        /*
-        public: 
-        
-            NetworkParams params;
-            LayerInfo info;
-            
-            NetworkLayer(NetworkParams params_in, LayerInfo info_in){
-                params = params_in;
-                info = info_in;
-            }
-            
-            void operator()(const blocked_range<int> &r) const{
-                
-                int layerNum = info.i; 
-                int num_in  = params.layer_sizes[layerNum];
-                int num_out = params.layer_sizes[layerNum+1]; 
-            
-                for(int j = r.begin(); j != r.end(); j++){
-                    
-                    double b = params.network_biases[info.sum_out_layer + j];
-                    
-                    // weight number  
-                    for(int k = 0; k < num_in; k++){
-                        double w    = params.network_weights[info.sum_layer + j*num_in + k];
-                        double inp  = info.a_in[k];
-                        double outp = w*inp; 
-                        info.a_out[j] += outp; 
-                    }
-                    
-                    if (layerNum != params.num_layers - 2) {
-                        double result = info.a_out[j] + b;
-                        info.a_out[j] = (*actfcn_arr[params.hiddenfcn])(result); 
-                    }
-                    else {
-                        double result = info.a_out[j] + b;
-                        info.a_out[j] = (*actfcn_arr[params.outfcn])(result); 
-                    }
-                  }
-            }
-            */       
-            
+            }              
     };
     
     class PipelineInput {
@@ -307,7 +266,7 @@
                 int weight_idx_base = l->sum_layer + j*num_in;
                 NetworkLayerReduce nnReduce(p, l, weight_idx_base);
                 // performs reduction on each weight for a given node 'j'
-                parallel_reduce(blocked_range<int>(0, num_in, 128), nnReduce);
+                parallel_reduce(blocked_range<int>(0, num_in, num_in), nnReduce);
                 // override reduction output for relu functions?
                 if (l->i != p->num_layers - 2) {
                         double result = nnReduce.my_aout + b;

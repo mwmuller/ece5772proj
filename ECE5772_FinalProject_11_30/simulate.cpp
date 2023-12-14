@@ -9,7 +9,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <tbb/tbb.h>
-#include "nn_fun_1.h"
+#include "simulate_fun.h"
 #include "FinishedNets/allNetworks.h"
 
 //#define EN_SEQ
