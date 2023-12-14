@@ -238,18 +238,13 @@
                 double b = np->network_biases[inf->sum_out_layer + j];
                 /* weight number */
                 //printf("Params: layerNum %d | num_in %d | num_out %d\n", layerNum, num_in, num_out);
-                // for(int k = 0; k < num_in; k++){
-                //     double w    = np->network_weights[inf->sum_layer + j*num_in + k];
-                //     //printf("Weight %lf\n", w);
-                //     double inp  = inf->a_in[k];
-                //     double outp = w*inp; 
-                //     result += outp; 
-                // }
-                int weight_idx_base = inf->sum_layer + j*num_in;
-                NetworkLayerReduce nnReduce(np, inf, weight_idx_base);
-                // performs reduction on each weight for a given node 'j'
-                parallel_reduce(blocked_range<int>(0, num_in, (num_in)), nnReduce);
-                result = nnReduce.my_aout;
+                for(int k = 0; k < num_in; k++){
+                    double w    = np->network_weights[inf->sum_layer + j*num_in + k];
+                    //printf("Weight %lf\n", w);
+                    double inp  = inf->a_in[k];
+                    double outp = w*inp; 
+                    result += outp; 
+                }
                 /* if we ARE NOT computing the output layer */
                 if (layerNum != np->num_layers - 2) {
                     double z = result + b;
@@ -312,7 +307,7 @@
                 int weight_idx_base = l->sum_layer + j*num_in;
                 NetworkLayerReduce nnReduce(p, l, weight_idx_base);
                 // performs reduction on each weight for a given node 'j'
-                parallel_reduce(blocked_range<int>(0, num_in, 128), nnReduce);
+                parallel_reduce(blocked_range<int>(0, num_in, (num_in)), nnReduce);
                 // override reduction output for relu functions?
                 if (l->i != p->num_layers - 2) {
                         double result = nnReduce.my_aout + b;
