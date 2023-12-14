@@ -25,10 +25,13 @@ LDFLAGS  =
 # '-lpthread' has to be included at the end of the command (can't be in the CFLAGS)
 # do not use spaces (tabs are allowed)
 # Example programs -----------------------------------------------------------
-OBJS = nnet
+OBJS = nnet nnet_1
 all: $(OBJS)
 
 nnet: nnet.cpp
+	$(CPP) $(STD11) -o $@ $^ $(TBB)
+
+nnet_1: nnet_1.cpp
 	$(CPP) $(STD11) -o $@ $^ $(TBB)
 # library
 

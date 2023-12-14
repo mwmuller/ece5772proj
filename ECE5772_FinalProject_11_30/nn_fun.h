@@ -282,11 +282,11 @@
     void RunLayerPipeline (int ntoken, int num_out, NetworkParams* np, LayerInfo* info) { 
         parallel_pipeline(ntoken, 
         make_filter<void, int>
-(filter_mode::serial_in_order, PipelineInput(num_out)) &
+(filter::serial_in_order, PipelineInput(num_out)) &
         make_filter<int, double>
-(filter_mode::parallel, PipelineTransfer(np, info)) & 
+(filter::parallel, PipelineTransfer(np, info)) & 
         make_filter<double, void>
-(filter_mode::serial_in_order, PipelineOutput(info, num_out)));
+(filter::serial_in_order, PipelineOutput(info, num_out)));
     }
     
     void ParallelComputeLayer(NetworkParams* p, LayerInfo* l, int num_out){

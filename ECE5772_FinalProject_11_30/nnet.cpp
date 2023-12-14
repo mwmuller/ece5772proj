@@ -74,10 +74,10 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
             seq_us += (seq_end.tv_sec - seq_start.tv_sec)*1000000 + seq_end.tv_usec - seq_start.tv_usec;
         }
         printf("\n20 Run Avg Computation Time (sequential): %lf\n", seq_us/NUM_RUNS);
-            //printf("Output(s)\n"); 
+        printf("Output(s)\n"); 
 
 
-        //printOutput(info.a_out, num_outputs);
+        printOutput(info.a_out, num_outputs);
 
     #endif
     
@@ -104,9 +104,9 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
             pfor_us += (pf_end.tv_sec - pf_start.tv_sec)*1000000 + pf_end.tv_usec - pf_start.tv_usec;
         }
         printf("\n20 Run Avg Computation Time (parallel_for): %lf\n", pfor_us/NUM_RUNS);
-        //printf("Output(s)\n");
+        printf("Output(s)\n");
 
-        //printOutput(info.a_out, num_outputs);
+        printOutput(info.a_out, num_outputs);
 
     #endif
     
@@ -131,9 +131,9 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
             ppip_us += (pp_end.tv_sec - pp_start.tv_sec)*1000000 + pp_end.tv_usec - pp_start.tv_usec;
         }
         printf("\n20 Run Avg Computation Time (parallel_pipeline): %lf\n", ppip_us/NUM_RUNS);
-        //printf("Output(s)\n");
+        printf("Output(s)\n");
 
-        //printOutput(info.a_out, num_outputs);
+        printOutput(info.a_out, num_outputs);
     
     #endif
 
@@ -159,9 +159,9 @@ void performBalance(int num_layers, int num_inputs, int num_outputs,
         }
 
         printf("\n20 Run Avg Computation Time (parallel_reduce): %lf\n", pred_us/NUM_RUNS);
-        //printf("Output(s)\n");
+        printf("Output(s)\n");
 
-       //printOutput(info.a_out, num_outputs);
+       printOutput(info.a_out, num_outputs);
     
     #endif
     

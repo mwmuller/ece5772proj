@@ -24,7 +24,7 @@
 
 using namespace tbb; 
 
-int main(){
+int main(int argc, char** argv){
     
     /*
      *  INFO: 
@@ -35,55 +35,79 @@ int main(){
      *  input: -1, expected result: -1.0082 (TEST PASSED)
      *  input:  0, expected result:  0.0020 (TEST PASSED)
      */
-     
+    int num_cells; 
+    if (argc != 2)
+    {
+	printf("Defaulting num cells to 3\n");
+	num_cells = 3;
+    }else{
+	num_cells = atoi(argv[1]);
+	printf("Number of cells selected: %d\n", num_cells);
+    }
     /* PARAMETER INITIALIZATION */
-    int num_cells   = 20; 
-    int num_layers  = 7;
-    int num_inputs  = 20;
-    int num_outputs = 20;
-    int layer_sizes[] = {20, 256, 256, 256, 256, 256, 20}; // input - hidden layers - output
-    
-    /*
-     double network_biases[] = 
-            {
-               0.6174, -0.9363, -0.4462, -0.9077, -0.8057,
-               -1.0392, -1.2578, -0.3869, -0.0865, 1.3236,
-               2.2620
-            };
-     double network_weights[] = 
-            {   
-               2.4611, 0.4863, -0.2155, 0.3110, -0.6576,
-               
-               1.9185, -0.1225, -0.0205, -0.4479, -0.0033,
-               -1.2188, -0.2369, -0.1088, 0.3594, 0.9195,
-               -0.3734, 0.5310, 0.2926, 0.3102, -0.3192,
-               2.0691, 0.5904, 0.4187, -0.6748, 0.1705,
-               -1.8475, -0.6263, 0.5094, -0.7620, -0.5524,
-               
-               2.0718, -2.5593, -0.7200, -1.7937, -2.3317
-            };
-    */
-    
+    int num_layers;
+    int num_inputs;
+    int num_outputs;
+    int layer_sizes_5[] = {5, 64, 64, 64, 64, 5};
+    int layer_sizes_3[] = {3, 48, 48, 48, 48, 3}; // input - hidden layers - output
+    int layer_sizes_10[] = {10, 96, 128, 128, 96, 10};
+    int layer_sizes_20[] = {20, 256, 256, 256, 256, 256, 20};
+    int *layer_sizes;
+    const double *network_biases;
+    const double *network_weights;
     double *state_of_charge = D_CALLOC(num_cells);
     FILE *fptr;
     
     if (num_cells == 3){
+	num_layers  = 6;
+	num_inputs  = 3;
+	num_outputs = 3;
+	layer_sizes = layer_sizes_3;
         double init[] = {0.5508, 0.7081, 0.2909};
+	network_biases = network_biases_3;
+        network_weights = network_weights_3;
         MEMCPY(state_of_charge, init, num_cells);
         fptr = fopen("results_3_cell.txt", "w");
     }
     else if (num_cells == 5){
+
+	num_layers  = 6;
+	num_inputs  = 5;
+	num_outputs = 5;
+	layer_sizes = layer_sizes_5;
+	network_biases = network_biases_5;
+        network_weights = network_weights_5;
+
         double init[] = {0.5508, 0.7081, 0.2909, 0.5108, 0.8929};
+
         MEMCPY(state_of_charge, init, num_cells);
         fptr = fopen("results_5_cell.txt", "w");
     }
     else if (num_cells == 10){
+
+	num_layers  = 6;
+	num_inputs  = 10;
+	num_outputs = 10;
+	layer_sizes = layer_sizes_10;
+	network_biases = network_biases_10;
+        network_weights = network_weights_10;
+
         double init[] = {0.5508, 0.7081, 0.2909, 0.5108, 0.8929,
                          0.8963, 0.1256, 0.2072, 0.0515, 0.4408};
+
         MEMCPY(state_of_charge, init, num_cells);
         fptr = fopen("results_10_cell.txt", "w");
     }
     else if (num_cells == 20){
+
+	num_layers  = 7;
+	num_inputs  = 20;
+	num_outputs = 20;
+	
+	layer_sizes = layer_sizes_20;
+	network_biases = network_biases_20;
+        network_weights = network_weights_20;
+
         double init[] = {0.5508, 0.7081, 0.2909, 0.5108, 0.8929,
                          0.8963, 0.1256, 0.2072, 0.0515, 0.4408,
                          0.0299, 0.4568, 0.6491, 0.2785, 0.6763,
@@ -113,8 +137,8 @@ int main(){
                 num_inputs,
                 num_outputs,
                 layer_sizes,
-                network_biases_20,
-                network_weights_20,
+                network_biases,
+                network_weights,
                 state_of_charge, 
                 relu,
                 purelin
