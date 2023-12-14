@@ -35,13 +35,18 @@ int main(int argc, char** argv){
      *  input: -1, expected result: -1.0082 (TEST PASSED)
      *  input:  0, expected result:  0.0020 (TEST PASSED)
      */
-    int num_cells; 
-    if (argc != 2)
+    int num_cells;
+    int sampleRate; 
+    if (argc < 2)
     {
 	printf("Defaulting num cells to 3\n");
 	num_cells = 3;
+	sampleRate = 1;
+	
     }else{
 	num_cells = atoi(argv[1]);
+	if (argc < 3) sampleRate = 1; // default the sample rate to 1
+	else sampleRate = atoi(argv[2]);
 	printf("Number of cells selected: %d\n", num_cells);
     }
     /* PARAMETER INITIALIZATION */
@@ -240,14 +245,17 @@ int main(int argc, char** argv){
             
             //printOutput(info.a_out, num_outputs);
             updateBatteryPack(state_of_charge, info.a_out, num_cells);
+
+	if (i % sampleRate == 0)
+	{
             printf("Sample number %d\n", i);
+	    fprintf(fptr, "Sample Number: %d\n", i);
             for(int cnt=0; cnt<num_cells; cnt++){
-                printf("x[%d] = %lf\n", cnt, state_of_charge[cnt]);
-                fprintf(fptr, "%0.5lf\n", state_of_charge[cnt]);
-            }
-            for(int cnt=0; cnt<num_cells; cnt++){
-                fprintf(fptr, "%0.5lf\n", info.a_out[cnt]);
-            }
+		printf("x[%d] = %lf\n", cnt, state_of_charge[cnt]);
+                fprintf(fptr, "x[%d] = %0.5lf | u[%d] = %0.5lf\n", cnt, state_of_charge[cnt], cnt, info.a_out[cnt]);
+		            
+	    }
+	}
         #endif
         
         free(a_in);
